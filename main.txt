@@ -1,0 +1,221 @@
+#include <stdio.h>
+#include<stdlib.h> // para 
+#include <sys/types.h> //para los tipos de pthread_t
+#include <linux/sched.h> //PARA LOS CLONES
+#include<sched.h>
+#include<signal.h> // para el sigstksz
+
+#include<unistd.h>
+
+
+
+#include "my_pthread.h"
+
+#include "Round_Robin.c"
+
+#define EJECUCION 0
+#define LISTO 1
+#define BLOQUEADO 2
+#define MUERTO 3
+#define FALSE 0
+#define TRUE 1
+
+hilo *top; // tope de la cola de hilos del TCB
+
+hilo* sched_RR;
+pthread_t t_id_RR;
+
+int listo_RR = FALSE;
+
+int schedulers_listos = FALSE;
+
+void *prueba(void *args){
+	int i = 0;
+	while(i++ < 3){
+		printf("thread turn\n");
+		fflush(stdout);
+		usleep(1000000);
+	}
+	//return NULL;
+}
+void *prueba2(void *args){
+	int i = 0;
+	while(i++ < 3){
+
+		printf("thread2 turn\n");
+		fflush(stdout);
+		usleep(1000000);
+	}
+	//return NULL;
+}
+
+/*
+Esta funcion busca el hilo que esta corriendo en este momento y lo retorna*/
+hilo* buscar_activo(){
+	hilo *actual = top;
+	while(actual->siguiente != NULL){
+		if(actual->estado == 0){
+			return actual;
+		}
+		actual = actual->siguiente;
+	}
+	if(actual->estado == 0){
+			return actual;
+	}
+	return NULL;
+}
+
+/* Luego de que un proceso termina, esta funcion salta al Scheduler para que
+corra el siguiente hilo que esta en estado LISTO */
+void my_thread_yield(){
+	longjmp(buffer_RR,1);
+}
+
+/*
+Despues de encontrar el hilo que esta acitvo
+lo pone en estado 4, osea que termino
+
+sino hay hilos activos se termina el hilo TOP, el cual es el hilo que tiene
+al scheduler funcionando, de esa manera el scheduler muere porque ya no
+hay hilos que correr
+*/
+void my_thread_exit(){
+	hilo *activo = buscar_activo();
+	if(activo == NULL){
+		listo_RR = FALSE;
+		schedulers_listos = FALSE;
+		kill(top->t_id,0);
+		top = NULL;
+		
+
+	}
+	else{
+		activo->estado = 4;
+
+		my_thread_yield();
+	}
+	
+}
+
+
+
+/* Esta funcion hace correr la funcion del hilo ingresado  */
+int my_thread_wrapper(void *hilo_ingresado){
+    
+    /*le digo a la funcion que el void ingresado es un hilo */
+	hilo *nuevo_hilo;
+	nuevo_hilo = (hilo *) hilo_ingresado;
+
+
+	/*si el hilo ingresado es el scheduler, comienzo a ejecutar la funcion del
+	scheduler */
+	if(nuevo_hilo->t_id == sched_RR->t_id){
+		nuevo_hilo->funcion(nuevo_hilo->args);
+		my_thread_exit();
+	}
+	else{
+		/*Si el hilo no es el scheduler lo meto al scheduler y espero
+		a que sea ejecutado pro el scheduler */
+		addRR(nuevo_hilo);
+		if(setjmp(nuevo_hilo->buffer)){
+			nuevo_hilo->retval = nuevo_hilo->funcion(nuevo_hilo->args);
+			my_thread_exit();
+		}
+
+	}
+
+	return 0;
+}
+/* imprime el TCB*/
+void print_TCB(){
+	printf("imprimiendo TCB\n");
+	hilo* temp = (hilo*)malloc(sizeof(hilo));
+	temp = top;
+	while(temp->siguiente != NULL){
+		printf("ID %ld - Estado %i\n",(long)temp->t_id,temp->estado);
+		temp = temp->siguiente;
+	}
+	printf("ID %ld - Estado %i\n",(long)temp->t_id,temp->estado);
+
+}
+
+/* agrega un nodo al TCB */
+void agregar_TCB(hilo* nuevo_hilo){
+	if(top==NULL){
+		nuevo_hilo->siguiente = NULL;
+		top = nuevo_hilo;
+	}
+	else{
+
+		hilo* temp = (hilo*)malloc(sizeof(hilo));
+		temp = top;
+		while(temp->siguiente != NULL){
+			temp = temp->siguiente;
+		}
+		nuevo_hilo->siguiente = NULL;
+		temp->siguiente = nuevo_hilo;
+	}
+}
+/*empieza el scheduler */
+int empezar_schedulers(){
+	crear_RR();
+	return my_pthread_create(&t_id_RR,NULL,schedulingRR,NULL);
+}
+
+/* 
+	Recbi un hilo para comenzar a crearlo, sino hay hilos en ejecucion
+	se crea un hilo para el scheduling y luego se crea el hilo que queriamos crear
+	al principio 
+ */
+extern int my_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*funcion) (void *),void * args){
+	char *pila_del_hilo;
+	unsigned long tam_pila;
+	
+	pid_t tid;
+	int retval;
+
+
+	/* Empieza la creacion del hilo */
+	if(listo_RR == FALSE){
+		listo_RR = TRUE;
+		empezar_schedulers();
+		sched_RR = top;
+		top = top->siguiente;
+		schedulers_listos = TRUE;
+	}
+	hilo *nuevo_hilo;
+	nuevo_hilo = (hilo*)malloc(sizeof(hilo));
+	if(nuevo_hilo == NULL){
+		printf("Error al tratar de reservar memoria al nuevo hilo");
+		return -1;
+	}
+
+	if(attr == NULL){
+		tam_pila = SIGSTKSZ;
+	}
+	//reservando la memoria a 64-bit
+	if (posix_memalign((void **)&pila_del_hilo, 8, tam_pila)) {
+		printf("Error al hacer posix_memalign\n");
+		return -2;
+	}
+
+	pila_del_hilo = pila_del_hilo + tam_pila - sizeof(sigset_t);
+
+	nuevo_hilo->funcion = funcion;
+	nuevo_hilo->args = args;
+	nuevo_hilo->estado = LISTO;
+	nuevo_hilo->retval = NULL;
+
+
+	const int clone_flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SYSVSEM
+                            | CLONE_SIGHAND | 0);
+
+	/* agrego al TCB el hilo*/
+	agregar_TCB(nuevo_hilo);
+	void *tp = thread;
+	/* hago el clone */
+	tid = __clone(my_thread_wrapper,(char *)pila_del_hilo,clone_flags,nuevo_hilo);//,thread,&thread->tid,tp,&thread->tid);
+	if(tid == -1) printf("(fallo con el clon)\n");
+	nuevo_hilo->t_id = tid;
+	return 0;
+}
