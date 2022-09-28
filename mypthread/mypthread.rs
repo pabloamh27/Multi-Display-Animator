@@ -5,7 +5,7 @@ use mypthread_struct::create_thread;
 
 
 // función para crear un hilo
-fn create_thread(id: u64, state: Bool, scheduler: Scheduler) -> thread {
+fn my_thread_create(id: u64, state: Bool, scheduler: Scheduler) -> thread {
     return thread {
         id: id,
         state: state,
@@ -15,6 +15,12 @@ fn create_thread(id: u64, state: Bool, scheduler: Scheduler) -> thread {
     }
 }
 
+enum Scheduler {
+    RoundRobin,
+    Sorteo,
+    TiempoReal,
+}
+
 // función para iniciar un hilo
 fn start_thread(thread: thread) -> thread {
     thread.state = true;
@@ -22,7 +28,7 @@ fn start_thread(thread: thread) -> thread {
 }
 
 // función para terminar un hilo
-fn end_thread(thread: thread) -> thread {
+fn my_thread_end(thread: thread) -> thread {
     thread.state = false;
     return thread;
 }
@@ -96,5 +102,38 @@ fn get_number_of_active_threads(thread_pool: Vec<thread>) -> u64 {
     return number_of_active_threads;
 }
 
+// función para agregar un hilo al thread pool
+fn add_thread(thread_pool: Vec<thread>, thread: thread) {
+    thread_pool.push(thread);
+}
 
+// funcion para ceder un hilo o su posicion en un principio 
+// **MODIFICAR PARA CEDER UN HILO QUE ESTÉ EN EJECUCIÓN**
+fn my_thread_yield(thread_id: u64, thread_pool: Vec<thread>) -> thread_pool {
+    yielded_thread = get_thread_by_id(thread_id, thread_pool);
+    thread_pool.retain(|&x| x != thread_id);
+    yielded_thread.push(thread_pool);
+    return thread;
+}
+
+// función para obtener un hilo por su id
+fn get_thread_by_id(thread_id: u64, thread_pool: Vec<thread>) -> thread {
+    for thread in thread_pool {
+        if thread.id == thread_id {
+            return thread;
+        }
+    }
+}
+
+// función para
+fn my_thread_join(thread: thread) -> thread {
+    // join thread function
+    return thread;
+}
+
+// función para 
+fn my_thread_detach(thread: thread) -> thread {
+    // detach thread function
+    return thread;
+}
 
