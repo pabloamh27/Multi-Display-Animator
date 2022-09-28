@@ -5,7 +5,7 @@ use mypthread_struct::create_thread;
 
 
 // función para crear un hilo
-fn my_thread_create(id: u64, state: Bool, scheduler: Scheduler) -> thread {
+fn my_thread_create(id: u64, state: State, scheduler: Scheduler) -> thread {
     return thread {
         id: id,
         state: state,
@@ -13,12 +13,6 @@ fn my_thread_create(id: u64, state: Bool, scheduler: Scheduler) -> thread {
         priority: 1,
         tickets: 1,
     }
-}
-
-enum Scheduler {
-    RoundRobin,
-    Sorteo,
-    TiempoReal,
 }
 
 // función para iniciar un hilo
@@ -125,13 +119,16 @@ fn get_thread_by_id(thread_id: u64, thread_pool: Vec<thread>) -> thread {
     }
 }
 
-// función para
+// función para poner en espera un hilo hasta que sea acabado o finalizado
+// **MODIFICAR EN CASO DE DAR PROBLEMAS EN UN FUTURO**
 fn my_thread_join(thread: thread) -> thread {
-    // join thread function
+    while thread.state != Off {
+        thread.state = Waiting;
+    }
     return thread;
 }
 
-// función para 
+// función para quitarle la responsabilidad a un hilo sobre alguna ejecución, le desasigna el hilo a una ejecución
 fn my_thread_detach(thread: thread) -> thread {
     // detach thread function
     return thread;
