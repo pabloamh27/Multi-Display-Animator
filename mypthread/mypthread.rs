@@ -78,13 +78,21 @@ fn get_tickets(thread: thread) -> u64 {
 
 // función para obtener el número de hilos
 fn get_number_of_threads(thread_pool: Vec<thread>) -> u64 {
-    // falta implementar
+    number_of_threads = 0;
+    for thread in thread_pool {
+        number_of_threads += 1;
+    }
     return number_of_threads;
 }
 
 // función para obtener el número de hilos activos
 fn get_number_of_active_threads(thread_pool: Vec<thread>) -> u64 {
-    // falta implementar
+    number_of_active_threads = 0;
+    for thread in thread_pool {
+        if thread.state == true {
+            number_of_active_threads += 1;
+        }
+    }
     return number_of_active_threads;
 }
 
