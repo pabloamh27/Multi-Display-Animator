@@ -130,6 +130,7 @@ fn my_thread_join(thread: thread) -> thread {
 
 // función para quitarle la responsabilidad a un hilo sobre alguna ejecución, le desasigna el hilo a una ejecución
 fn my_thread_detach(thread: thread) -> thread {
+    // https://www.google.com/search?channel=fs&client=ubuntu&q=detach+threading
     // detach thread function
     return thread;
 }
