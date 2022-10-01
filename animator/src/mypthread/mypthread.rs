@@ -27,12 +27,13 @@ pub fn create_thread(func: extern "C" fn(), thread_tickets: isize, scheduler_typ
         child_temp.uc_link = parent_match() as *mut ucontext_t;
        
         makecontext(&mut child_temp as *mut ucontext_t, func, 0);
-        let thread_t = thread {id:(get_number_of_threads + 1), state: false, tickets: thread_tickets, 
+        let new_thread = thread {id:(get_number_of_threads + 1), state: false, tickets: new_threadickets, 
             scheduler: scheduler_type, context: child_temp};
         //Thread creado
-        THREADS.push(thread_t);
+        THREADS.push(new_thread);
+        //Revisar este push, es necesario?
         THREADS_CONTEXT.push(Some(child_temp));
-        return thread_t;
+        return new_thread;
     }
 }
 
