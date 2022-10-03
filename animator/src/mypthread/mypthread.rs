@@ -1,6 +1,6 @@
 extern crate libc;
 
-use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void};
+use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, uc_link};
 use std::mem;
 
 mod mypthread_struct;
@@ -15,10 +15,10 @@ static mut THREADS:Vec<threads> = Vec::new();
 #[derive(Copy, Clone)]
 
 // create my thread
-pub fn create_thread(func: extern "C" fn(), thread_tickets: isize, scheduler_type: isize) -> thread{
+pub fn my_thread_create(func: extern "C" fn(), thread_tickets: isize, scheduler_type: isize) -> thread{
     unsafe {
         let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
-        
+
         let mut child_temp: ucontext_t = mem::uninitialized();
         getcontext(&mut child_temp as *mut ucontext_t);
         child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
@@ -28,14 +28,101 @@ pub fn create_thread(func: extern "C" fn(), thread_tickets: isize, scheduler_typ
        
         makecontext(&mut child_temp as *mut ucontext_t, func, 0);
         let new_thread = thread {id:(get_number_of_threads + 1), state: false, tickets: new_threadickets, 
-            scheduler: scheduler_type, context: child_temp};
+            scheduler: scheduler_type, context: Some(child_temp)};
         //Thread creado
         THREADS.push(new_thread);
         //Revisar este push, es necesario?
-        THREADS_CONTEXT.push(Some(child_temp));
+        //THREADS_CONTEXT.push(Some(child_temp));
         return new_thread;
     }
 }
+
+
+// función para terminar un hilo
+//Verificar si este end_thread no jode nada
+/*
+pub fn end_thread() {
+    unsafe {
+        let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
+        let mut child_temp: ucontext_t = mem::uninitialized();
+        getcontext(&mut child_temp as *mut ucontext_t);
+        child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
+        child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
+        child_temp.uc_link = parent_match() as *mut ucontext_t;
+        swapcontext(&mut child_temp as *mut ucontext_t, parent_match() as *mut ucontext_t);
+    }
+}
+*/
+
+pub fn my_thread_end(context: *mut ucontext_t) {
+    unsafe{swapcontext(context, parent_match() as *mut ucontext_t)};
+}
+
+
+
+// función para abrir una cola para un hilo
+pub fn my_thread_join(thread: thread) {     // revisar
+    unsafe {
+        if thread.state == false {
+            swapcontext(parent_match() as *mut ucontext_t, thread.context.unwrap() as *mut ucontext_t);
+        }
+    }
+}
+
+
+// función para alternar el scheduler
+pub fn sched_alternator() {
+    unsafe {
+        let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
+        let mut child_temp: ucontext_t = mem::uninitialized();
+        getcontext(&mut child_temp as *mut ucontext_t);
+        child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
+        child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
+        child_temp.uc_link = parent_match() as *mut ucontext_t;
+        
+
+        let alternator = 0;
+
+        // falta lo de elevar el scheduler
+
+
+
+        if active_sched == 0 {
+            makecontext(&mut child_temp as *mut ucontext_t, my_sched_round_robin, 1);
+        }
+
+        if active_sched == 1 {
+            makecontext(&mut child_temp as *mut ucontext_t, my_sched_sort, 1);
+        }
+
+        if active_sched == 2 {
+            makecontext(&mut child_temp as *mut ucontext_t, my_sched_real_time, 1);
+        }
+
+        swapcontext(&mut child_temp as *mut ucontext_t, parent_match() as *mut ucontext_t);
+    }
+}
+
+// función para cambiar el scheduler
+pub fn my_thread_change_sched(scheduler_type: isize) {
+    unsafe {
+        let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
+        let mut child_temp: ucontext_t = mem::uninitialized();
+        getcontext(&mut child_temp as *mut ucontext_t);
+        child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
+        child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
+        child_temp.uc_link = parent_match() as *mut ucontext_t;
+        makecontext(&mut child_temp as *mut ucontext_t, sched_alternator, 1);
+        swapcontext(&mut child_temp as *mut ucontext_t, parent_match() as *mut ucontext_t);
+    }
+}
+
+
+
+
+
+
+
 
 
 // Pendiente de implementar de manera correcta
@@ -49,6 +136,29 @@ fn assing_scheduler(thread: thread) -> thread{
     return thread;
 }
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // función para iniciar un hilo
