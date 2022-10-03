@@ -6,6 +6,7 @@ use std::mem;
 mod mypthread_struct;
 use mypthread_struct::create_thread;
 
+
 static mut THREADS:Vec<threads> = Vec::new();
 
 // todas las funciones de pthread deben hechas aquí
@@ -18,9 +19,11 @@ static mut THREADS:Vec<threads> = Vec::new();
 pub fn my_thread_create(func: extern "C" fn(), thread_tickets: isize, scheduler_type: isize) -> thread{
     unsafe {
         let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
-
         let mut child_temp: ucontext_t = mem::uninitialized();
+
+        //Ver como importar esta variable del ucontext_t
         getcontext(&mut child_temp as *mut ucontext_t);
+        
         child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
         child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
 
@@ -69,19 +72,35 @@ pub fn my_thread_join(thread: thread) {     // revisar
     }
 }
 
+// función auxiliar para cambiar el tipo de scheduler
+ pub fn my_thread_change_sched(new_scheduler : u64){
+    unsafe{
+        if new_scheduler == 0{
+            active_sched = 0;
+        }
+        else if new_scheduler == 1{
+            active_sched = 1;
+        }
+        else if new_scheduler == 2{
+            active_sched = 2;
+        }
+    }
+ }
 
 // función para alternar el scheduler
 pub fn sched_alternator() {
     unsafe {
         let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
         let mut child_temp: ucontext_t = mem::uninitialized();
+        
         getcontext(&mut child_temp as *mut ucontext_t);
+
         child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
         child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
         child_temp.uc_link = parent_match() as *mut ucontext_t;
         
 
-        let alternator = 0;
+        let alternator : u64 = 0;
 
         // falta lo de elevar el scheduler
 
