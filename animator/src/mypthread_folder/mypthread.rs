@@ -28,8 +28,8 @@ static mut active_sched: i64 = 0;
 // función para crear un hilo
 
 // create my thread
-pub fn my_thread_create(func: extern "C" fn(), thread_tickets: isize, scheduler_type: isize) -> thread{
-    unsafe {
+pub unsafe fn my_thread_create(func: extern "C" fn(), thread_tickets: isize, scheduler_type: isize) -> thread{
+
         let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
         let mut child_temp: ucontext_t = mem::uninitialized();
 
@@ -49,7 +49,6 @@ pub fn my_thread_create(func: extern "C" fn(), thread_tickets: isize, scheduler_
         //Revisar este push, es necesario?
         //THREADS_CONTEXT.push(Some(child_temp));
         return new_thread;
-    }
 }
 
 
