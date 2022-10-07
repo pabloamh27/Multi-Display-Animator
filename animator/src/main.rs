@@ -1,5 +1,6 @@
-mod my_schedulers;
-mod mypthread;
+
+#[path = "mypthread_folder/mypthread.rs"] mod mypthread;
+
 
 fn main() {
     println!("Hello, world!");
