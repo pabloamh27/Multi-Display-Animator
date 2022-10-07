@@ -1,13 +1,19 @@
 extern crate libc;
 
-use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, uc_link};
+use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void};
 use std::mem;
 
+//Ver como importar las librerias de los otros archivos
 mod mypthread_struct;
-use mypthread_struct::create_thread;
+mod myschedulers;
 
 
 static mut THREADS:Vec<threads> = Vec::new();
+//static mut signal_context = ucontext_t::default();
+//BRETEAR ESTO
+static mut STACK_SIZE: usize = 10000;
+static mut active_sched: i64 = 0;
+
 
 // todas las funciones de pthread deben hechas aquí
 
@@ -21,11 +27,11 @@ pub fn my_thread_create(func: extern "C" fn(), thread_tickets: isize, scheduler_
         let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
         let mut child_temp: ucontext_t = mem::uninitialized();
 
-        //Ver como importar esta variable del ucontext_t
         getcontext(&mut child_temp as *mut ucontext_t);
-        
+
         child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
         child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
+        //Ver como importar esta variable del ucontext_t
 
         child_temp.uc_link = parent_match() as *mut ucontext_t;
        
@@ -87,24 +93,32 @@ pub fn my_thread_join(thread: thread) {     // revisar
     }
  }
 
+//funcion para mapear schedulers
+pub fn my_thread_change_sched(scheduler_type: isize) {
+    unsafe{
+    if scheduler_type == 0 {active_sched = 0;}
+    if scheduler_type == 1 {active_sched = 1;}
+    if scheduler_type == 2 {active_sched = 2;}
+    }
+}
+
 // función para alternar el scheduler
 pub fn sched_alternator() {
     unsafe {
-        let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
-        let mut child_temp: ucontext_t = mem::uninitialized();
-        
-        getcontext(&mut child_temp as *mut ucontext_t);
+        getcontext(&signal_context);
 
-        child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
-        child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
-        child_temp.uc_link = parent_match() as *mut ucontext_t;
+        signal_context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
+        signal_context.uc_stack.ss_size = STACK_SIZE;
+        signal_context.uc_stack.ss_flags = 0;
+
+        sigemptyset(&mut signal_context.uc_sigmask);
         
 
         let alternator : u64 = 0;
 
-        // falta lo de elevar el scheduler
+        alternator = alternator^active_sched;
 
-
+        my_thread_change_sched(alternator);
 
         if active_sched == 0 {
             makecontext(&mut child_temp as *mut ucontext_t, my_sched_round_robin, 1);
@@ -122,28 +136,6 @@ pub fn sched_alternator() {
     }
 }
 
-// función para cambiar el scheduler
-pub fn my_thread_change_sched(scheduler_type: isize) {
-    unsafe {
-        let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
-        let mut child_temp: ucontext_t = mem::uninitialized();
-        getcontext(&mut child_temp as *mut ucontext_t);
-        child_temp.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
-        child_temp.uc_stack.ss_size = mem::size_of_val(&st1);
-        child_temp.uc_link = parent_match() as *mut ucontext_t;
-        makecontext(&mut child_temp as *mut ucontext_t, sched_alternator, 1);
-        swapcontext(&mut child_temp as *mut ucontext_t, parent_match() as *mut ucontext_t);
-    }
-}
-
-
-
-
-
-
-
-
-
 // Pendiente de implementar de manera correcta
 /*
 fn assing_scheduler(thread: thread) -> thread{
@@ -155,29 +147,6 @@ fn assing_scheduler(thread: thread) -> thread{
     return thread;
 }
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // función para iniciar un hilo
