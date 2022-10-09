@@ -5,5 +5,7 @@ mod mypthread_struct;
 mod myschedulers;
 
 fn main() {
-    println!("Hello, world!");
+    println!("5 threads created");
+    
+
 }
