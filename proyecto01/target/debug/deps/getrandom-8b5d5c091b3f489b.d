@@ -1,0 +1,11 @@
+/home/estudiante/Desktop/Repos_Git/sistemasoperativos-proyecto01/proyecto01/target/debug/deps/getrandom-8b5d5c091b3f489b.rmeta: /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/lib.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/error.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/util.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/error_impls.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/util_libc.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/use_file.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/linux_android.rs
+
+/home/estudiante/Desktop/Repos_Git/sistemasoperativos-proyecto01/proyecto01/target/debug/deps/getrandom-8b5d5c091b3f489b.d: /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/lib.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/error.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/util.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/error_impls.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/util_libc.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/use_file.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/linux_android.rs
+
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/lib.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/error.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/util.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/error_impls.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/util_libc.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/use_file.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/getrandom-0.2.7/src/linux_android.rs:

@@ -3,9 +3,6 @@ use std::mem;
 use crate::mypthread;
 
 static mut STACK_SIZE: usize = 10000;
-//static mut SIGNAL_CONTEXT : ucontext_t = None;
-
-static mut SIGNAL_CONTEXT: ucontext_t = Null;
 
 //funcion para mapear schedulers
 pub (crate) unsafe fn my_thread_change_sched(scheduler_type: u64){
@@ -16,36 +13,39 @@ pub (crate) unsafe fn my_thread_change_sched(scheduler_type: u64){
 
 // función para alternar el scheduler
 pub (crate) unsafe fn sched_alternator() {
+        //Creacion del Signal Context***
+        let mut signal_context: ucontext_t = mem::uninitialized(); 
+        //Creacion del Signal Context***
 
-        getcontext(&mut SIGNAL_CONTEXT);
+        getcontext(&mut signal_context);
     
         let mut st1: [c_char; 8192] = [mem::zeroed(); 8192];
-        SIGNAL_CONTEXT.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
-        SIGNAL_CONTEXT.uc_stack.ss_size = STACK_SIZE;
-        SIGNAL_CONTEXT.uc_stack.ss_flags = 0;
+        signal_context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
+        signal_context.uc_stack.ss_size = STACK_SIZE;
+        signal_context.uc_stack.ss_flags = 0;
 
-        sigemptyset(&mut SIGNAL_CONTEXT.uc_sigmask);
+        sigemptyset(&mut signal_context.uc_sigmask);
         
 
-        let alternator : u64 = 0;
+        let mut alternator : u64 = 0;
 
         alternator = alternator^mypthread::active_sched;
 
         my_thread_change_sched(alternator);
 
         if mypthread::active_sched == 0 {
-            makecontext(&mut SIGNAL_CONTEXT as *mut ucontext_t, my_sched_round_robin, 1);
+            makecontext(&mut signal_context as *mut ucontext_t, my_sched_round_robin, 1);
         }
 
         if mypthread::active_sched == 1 {
-            makecontext(&mut SIGNAL_CONTEXT as *mut ucontext_t, my_sched_sort, 1);
+            makecontext(&mut signal_context as *mut ucontext_t, my_sched_sort, 1);
         }
 
         if mypthread::active_sched == 2 {
-            makecontext(&mut SIGNAL_CONTEXT as *mut ucontext_t, my_sched_real_time, 1);
+            makecontext(&mut signal_context as *mut ucontext_t, my_sched_real_time, 1);
         }
 
-        swapcontext(mypthread::CURRENT_THREAD ,&mut SIGNAL_CONTEXT as *mut ucontext_t);
+        swapcontext(mypthread::CURRENT_THREAD ,&mut signal_context as *mut ucontext_t);
 }
 
 
