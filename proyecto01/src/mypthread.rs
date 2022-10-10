@@ -5,8 +5,6 @@ use std::mem;
 
 use rand::Rng;
 
-
-
 static mut THREADS:Vec<Thread> = Vec::new();
 static mut ROUND_ROBIN_THREADS:Vec<Thread> = Vec::new();
 static mut SORT_THREADS:Vec<Thread> = Vec::new();
