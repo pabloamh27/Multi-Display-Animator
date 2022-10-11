@@ -3,17 +3,16 @@ mod mypthread;
 use crate::mypthread::{my_thread_create};
 mod mypthread_struct;
 mod myschedulers;
-mod mymutex;
+//mod mymutex;
 
 
-fn main() {
+/*fn main() {
     print!("Hello, world!");
-}
-/*
+}*/
+
 use libc::ucontext_t;
 use libc::c_char;
 use std::mem;
-
 
 // Función de ejemplo
 extern "C" fn f1() {
@@ -32,15 +31,13 @@ extern "C" fn f3() {
 }
 pub fn main() {
     unsafe {
-        let mut HANDLER = rb_thread::init_handler(1,1);
-        let mut new_thread:rb_thread::rb_thread_t = rb_thread::create_thread(f1, 1);
-        let mut new_thread:rb_thread::rb_thread_t = rb_thread::create_thread(f2, 2);
 
-        HANDLER.start_threads();
+        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f1, 1);
+        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f2, 2);
+        mypthread::run_threads(0);
+        mypthread::run_threads(1);
     }
 
 
 
-
 }
-*/
