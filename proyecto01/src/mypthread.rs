@@ -8,11 +8,9 @@ use rand::Rng;
 static mut THREADS:Vec<Thread> = Vec::new();
 static mut ROUND_ROBIN_THREADS:Vec<Thread> = Vec::new();
 static mut SORT_THREADS:Vec<Thread> = Vec::new();
-static mut WAITING_THREADS:Vec<Thread> = Vec::new();
 
 
-
-
+static mut ACTIVE_THREADS:Vec<Thread> = Vec::new();
 
 pub static mut CURRENT_THREAD: *mut ucontext_t = 0 as *mut ucontext_t;
 
@@ -52,7 +50,6 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
     } else if new_thread.scheduler == 1 {
         SORT_THREADS.push(new_thread);
     }
-
     return new_thread;
 
 }
@@ -72,13 +69,13 @@ pub (crate) unsafe fn my_thread_yield(context_sender: *mut ucontext_t, context_r
 }
 
 pub (crate) unsafe fn my_thread_join(mut thread: Thread) {
-    if WAITING_THREADS.is_empty(){
+    if ACTIVE_THREADS.is_empty(){
         thread.state = State::Ready;
-        WAITING_THREADS.push(thread);
+        ACTIVE_THREADS.push(thread);
     }
-    else if get_state(WAITING_THREADS[0]) == State::Ready {
+    else if get_state(ACTIVE_THREADS[0]) == State::Ready {
         thread.state = State::Waiting;
-        WAITING_THREADS.push(thread);
+        ACTIVE_THREADS.push(thread);
     }
 }
 
@@ -140,7 +137,7 @@ pub (crate) unsafe fn my_thread_chsched(scheduler_type: isize, mut thread: Threa
 }
 
 
-pub (crate) unsafe fn run_threads(indice_hilo: usize) {
+pub (crate) unsafe fn run_threads() {
 
     /*
     Funcion que se encarga de correr los threads creados
@@ -148,11 +145,41 @@ pub (crate) unsafe fn run_threads(indice_hilo: usize) {
     Restricciones: Ninguna
     Salidas: Hilos ejecutados
     */
-    let thread:&'static mut ucontext_t  = &mut THREADS[indice_hilo].context;
+
+
+    let thread:&'static mut ucontext_t  = &mut THREADS[0].context;
+
     CURRENT_THREAD = thread;
 
-    setcontext(&THREADS[indice_hilo].context);
+    setcontext(&THREADS[0].context);
 
+    // while todavía *haigan* hilos activos
+    while !ACTIVE_THREADS.is_empty() {
+        for thread in THREADS.clone() {
+            if thread.state != State::Off || thread.state == State::Blocked {
+                ACTIVE_THREADS.push(thread);
+            }
+        }
+        // Random para ver cuál sched se usa
+        let mut rng = rand::thread_rng();
+        let lil_coin = rng.gen_range(0..2);
+        if lil_coin == 0 {
+            // Round Robin
+            ROUND_ROBIN_THREADS = my_sched_round_robin(ROUND_ROBIN_THREADS.clone());
+            ROUND_ROBIN_THREADS[0].state = State::Ready;
+            let thread:&'static mut ucontext_t  = &mut ROUND_ROBIN_THREADS[0].context;
+            CURRENT_THREAD = thread;
+            setcontext(&thread.context);
+        } else if monedita == 1{
+            // Sorteo
+            SORT_THREADS = my_sched_sorteo(SORT_THREADS.clone());
+            SORT_THREADS[0].state = State::Ready;
+            let thread:&'static mut ucontext_t  = &mut SORT_THREADS[0].context;
+            CURRENT_THREAD = thread;
+            setcontext(&thread.context);
+        }
+        // llamar a los schedulers
+    }
 }
 
 

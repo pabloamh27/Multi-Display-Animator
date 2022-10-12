@@ -34,8 +34,8 @@ pub fn main() {
 
         let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f1, 1);
         let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f2, 2);
-        mypthread::run_threads(0);
-        mypthread::run_threads(1);
+        mypthread::run_threads();
+        mypthread::run_threads();
     }
 
 

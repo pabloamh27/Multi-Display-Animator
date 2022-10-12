@@ -1,6 +1,7 @@
 use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, sigemptyset};
 use std::mem;
 use crate::mypthread;
+use crate::mypthread_struct::{Thread};
 
 static mut STACK_SIZE: usize = 10000;
 
@@ -10,7 +11,7 @@ pub (crate) unsafe fn my_thread_change_sched(scheduler_type: u64){
     if scheduler_type == 1 {mypthread::active_sched = 1;}
     if scheduler_type == 2 {mypthread::active_sched = 2;}
 }
-
+/*
 // función para alternar el scheduler
 pub (crate) unsafe fn sched_alternator() {
         //Creacion del Signal Context***
@@ -47,9 +48,15 @@ pub (crate) unsafe fn sched_alternator() {
 
         swapcontext(mypthread::CURRENT_THREAD ,&mut signal_context as *mut ucontext_t);
 }
+*/
 
 
-pub extern "C" fn my_sched_round_robin() {}
+pub extern "C" fn my_sched_round_robin(round_robin_list : Vec<Threads>) -> Vec<Threads>{
+    thread = round_robin_list[0];
+    round_robin_list.remove(0);
+    round_robin_list.push(thread);
+    return round_robin_list;
+}
 
 pub extern "C" fn my_sched_sort() {}
 
