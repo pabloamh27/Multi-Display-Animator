@@ -2,7 +2,7 @@ use libc::ucontext_t;
 
 
 #[derive(Clone, Copy)]
-pub(crate) struct Thread {
+pub struct Thread {
     pub(crate) id: usize,
     pub(crate) state: State,
     pub(crate) scheduler: isize,
@@ -10,15 +10,10 @@ pub(crate) struct Thread {
     pub(crate) tickets: u64,
 }
 
-//Hashmap mental
-/*hashmap! {
-    "1" => RoundRobin(),
-    "2" => Lottery(),   *sorteo*
-}   
-*/
+
 // Define los estados del hilo
 #[derive(Clone, Copy, PartialEq)]
-pub(crate) enum State {
+pub enum State {
     On = 1,
     Off = 0,
     Ready = 2,

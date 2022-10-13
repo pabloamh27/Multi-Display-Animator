@@ -1,7 +1,8 @@
-use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, sigemptyset};
+use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, sigemptyset, timer_settime};
 use std::mem;
 use crate::mypthread;
-use crate::mypthread_struct::{Thread};
+use crate::mypthread_struct::{Thread, State, get_state};
+
 
 static mut STACK_SIZE: usize = 10000;
 
@@ -51,13 +52,21 @@ pub (crate) unsafe fn sched_alternator() {
 */
 
 
-pub extern "C" fn my_sched_round_robin(round_robin_list : Vec<Threads>) -> Vec<Threads>{
-    thread = round_robin_list[0];
+pub extern "C" fn my_sched_round_robin(mut round_robin_list: Vec<Thread>) -> Vec<Thread>{
+    let mut thread = round_robin_list[0];
     round_robin_list.remove(0);
     round_robin_list.push(thread);
+    //swapcontext(mypthread::CURRENT_THREAD, &mut thread.context as *mut ucontext_t);
+    for i in round_robin_list.clone()
+    {
+        println!("Thread ID: {}", i.id);
+    }
     return round_robin_list;
 }
 
-pub extern "C" fn my_sched_sort() {}
+pub extern "C" fn my_sched_sort(mut sort_list: Vec<Thread>) -> Vec<Thread> {
+    sort_list.sort_by(|a, b| a.tickets.cmp(&b.tickets));
+    return sort_list;
+}
 
 pub extern "C" fn my_sched_real_time() {}

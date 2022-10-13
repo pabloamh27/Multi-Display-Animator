@@ -24,6 +24,7 @@ extern "C" fn f2() {
     println!("INICIO 2");
     //unsafe{rb_thread::thread_yield(rb_thread::child_match(1), rb_thread::child_match(0));}
     println!("FIN 2");
+
 }
 
 extern "C" fn f3() {
@@ -34,7 +35,6 @@ pub fn main() {
 
         let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f1, 1);
         let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f2, 2);
-        mypthread::run_threads();
         mypthread::run_threads();
     }
 
