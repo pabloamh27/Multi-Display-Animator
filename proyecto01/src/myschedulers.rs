@@ -52,14 +52,20 @@ pub (crate) unsafe fn sched_alternator() {
 */
 
 
-pub extern "C" fn my_sched_round_robin(mut round_robin_list: Vec<Thread>) -> Vec<Thread>{
+pub extern "C" fn my_sched_round_robin(mut round_robin_list: Vec<Thread>) -> Vec<Thread> {
     let mut thread = round_robin_list[0];
+    thread.state = State::Waiting;
     round_robin_list.remove(0);
     round_robin_list.push(thread);
     //swapcontext(mypthread::CURRENT_THREAD, &mut thread.context as *mut ucontext_t);
     for i in round_robin_list.clone()
     {
         println!("Thread ID: {}", i.id);
+    }
+    let current_thread = &mut round_robin_list[0].context as *mut ucontext_t;
+    unsafe {
+    swapcontext(current_thread, &mut thread.context as *mut ucontext_t);
+    mypthread::CURRENT_THREAD = current_thread;
     }
     return round_robin_list;
 }

@@ -162,6 +162,11 @@ pub (crate) unsafe fn run_threads() {
         println!("Thread: {}", i.id);
     }
 
+    for i in 0..ROUND_ROBIN_THREADS.len() {
+        if ROUND_ROBIN_THREADS[i].state == State::On {
+            ROUND_ROBIN_THREADS[i].state == State::Waiting;
+        }
+    }
 
     // while todavía *hayan* hilos activos
     while !ACTIVE_THREADS.is_empty() {
@@ -184,7 +189,7 @@ pub (crate) unsafe fn run_threads() {
                 //Considerar el *swap_context*
                 //setcontext(&ROUND_ROBIN_THREADS[0].context);
                 setcontext(&mut ROUND_ROBIN_THREADS[0].context);
-                swapcontext(thread, &ROUND_ROBIN_THREADS[0].context);
+                //swapcontext(thread, &ROUND_ROBIN_THREADS[0].context);
                 //timer_create(0, 0 as *mut timer_settime, );
             }
 
