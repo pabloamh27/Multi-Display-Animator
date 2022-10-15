@@ -169,7 +169,7 @@ pub (crate) unsafe fn run_threads() {
     }
 
     // while todavía *hayan* hilos activos
-    while !ACTIVE_THREADS.is_empty() {
+    while !ROUND_ROBIN_THREADS.is_empty() {
 
         // Random para ver cuál sched se usa
         //let mut rng = rand::thread_rng();
@@ -177,27 +177,50 @@ pub (crate) unsafe fn run_threads() {
         let lil_coin = 0;
         println!("lil_coin: {}", lil_coin);
         if lil_coin == 0 {
+
+
             // Round Robin
             if !ROUND_ROBIN_THREADS.is_empty() {
 
                 ROUND_ROBIN_THREADS = my_sched_round_robin(ROUND_ROBIN_THREADS.clone());
                 ROUND_ROBIN_THREADS[0].state = State::Ready;
 
+                // no está haciendo este print why?
                 println!("ThreadRR: {}", ROUND_ROBIN_THREADS[0].id);
                 let thread:&'static mut ucontext_t  = &mut ROUND_ROBIN_THREADS[0].context;
+
                 CURRENT_THREAD = thread;
                 //Considerar el *swap_context*
-                //setcontext(&ROUND_ROBIN_THREADS[0].context);
-                setcontext(&mut ROUND_ROBIN_THREADS[0].context);
+
+                let context = getcontext(thread as *mut ucontext_t);
+
+                if context == -1 {
+                    let thread_to_remove = ROUND_ROBIN_THREADS[0];
+                    for i in 0..ACTIVE_THREADS.len() {
+                        if ACTIVE_THREADS[i].id == thread_to_remove.id {
+                            ACTIVE_THREADS.remove(i);
+                            break;
+                        }
+                    }
+                }
+                else {
+                    setcontext(&mut ROUND_ROBIN_THREADS[0].context);
+                    //swapcontext(thread, &ROUND_ROBIN_THREADS[0].context); // lo probé y da el mismo error
+                }
+
                 //swapcontext(thread, &ROUND_ROBIN_THREADS[0].context);
                 //timer_create(0, 0 as *mut timer_settime, );
             }
 
-        } else if lil_coin == 1{
+
+        }
+        else if lil_coin == 1{
             // Sorteo
             if !SORT_THREADS.is_empty(){
                 SORT_THREADS = my_sched_sort(SORT_THREADS.clone());
                 SORT_THREADS[0].state = State::Ready;
+
+                // creo que aquí está el segmenation fault
                 let thread:&'static mut ucontext_t  = &mut SORT_THREADS[0].context;
                 CURRENT_THREAD = thread;
                 //Considerar el *swap_context*
