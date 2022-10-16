@@ -1,5 +1,5 @@
 use crate::mypthread_struct::{Thread, State, get_state};
-use crate::myschedulers::{my_sched_round_robin, my_sched_sort, my_sched_real_time};
+use crate::myschedulers::{my_sched_sort, my_sched_real_time, my_sched_round_robin_aux};
 use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, setcontext, timer_settime, timer_create};
 use std::mem;
 use std::process::exit;
@@ -146,11 +146,11 @@ pub (crate) unsafe fn run_threads() {
     Restricciones: Ninguna
     Salidas: Hilos ejecutados
     */
-    //let thread:&'static mut ucontext_t  = &mut THREADS[0].context;
+    let thread:&'static mut ucontext_t  = &mut THREADS[0].context;
 
-    //CURRENT_THREAD = thread;
+    CURRENT_THREAD = thread;
 
-    //setcontext(&THREADS[0].context);
+    setcontext(thread);
 
     for i in THREADS.clone(){
         if i.state != State::Off && i.state != State::Blocked {
@@ -176,15 +176,11 @@ pub (crate) unsafe fn run_threads() {
         //let lil_coin = rng.gen_range(0..2);
         let lil_coin = 0;
         println!("lil_coin: {}", lil_coin);
+
         if lil_coin == 0 {
-
-
             // Round Robin
             if !ROUND_ROBIN_THREADS.is_empty() {
-
-                ROUND_ROBIN_THREADS = my_sched_round_robin(ROUND_ROBIN_THREADS.clone());
-                ROUND_ROBIN_THREADS[0].state = State::Ready;
-
+                ROUND_ROBIN_THREADS = my_sched_round_robin_aux(ROUND_ROBIN_THREADS.clone());
                 // no está haciendo este print why?
                 println!("ThreadRR: {}", ROUND_ROBIN_THREADS[0].id);
                 let thread:&'static mut ucontext_t  = &mut ROUND_ROBIN_THREADS[0].context;

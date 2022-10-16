@@ -1,6 +1,7 @@
-use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, sigemptyset, timer_settime};
+use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, sigemptyset, timer_settime, setcontext};
 use std::mem;
 use crate::mypthread;
+use crate::mypthread::CURRENT_THREAD;
 use crate::mypthread_struct::{Thread, State, get_state};
 
 
@@ -51,25 +52,24 @@ pub (crate) unsafe fn sched_alternator() {
 }
 */
 
-
-pub extern "C" fn my_sched_round_robin(mut round_robin_list: Vec<Thread>) -> Vec<Thread> {
-
-    for i in round_robin_list.clone()
-    {
-        println!("Thread ID: {}", i.id);
-    }
-
+pub (crate) unsafe fn my_sched_round_robin_aux (mut round_robin_list: Vec<Thread>) -> Vec<Thread> {
 
     let mut thread = round_robin_list[0];
     thread.state = State::Waiting;
-    //swapcontext(mypthread::CURRENT_THREAD, &mut thread.context as *mut ucontext_t);
-
-    let current_thread = &mut round_robin_list[0].context as *mut ucontext_t;
-    unsafe {
-    swapcontext(current_thread, &mut thread.context as *mut ucontext_t);
-    mypthread::CURRENT_THREAD = current_thread;
-    }
+    round_robin_list.remove(0);
+    round_robin_list.push(thread);
+    let mut actual_thread = round_robin_list[0];
+    actual_thread.state = State::Ready;
+    mypthread::CURRENT_THREAD = &mut round_robin_list[0].context;
+    my_sched_round_robin();
     return round_robin_list;
+}
+
+
+pub extern "C" fn my_sched_round_robin() {
+    unsafe {
+        setcontext(mypthread::CURRENT_THREAD);
+    }
 }
 
 pub extern "C" fn my_sched_sort(mut sort_list: Vec<Thread>) -> Vec<Thread> {
