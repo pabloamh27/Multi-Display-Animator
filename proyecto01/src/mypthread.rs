@@ -35,8 +35,7 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
     context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
     context.uc_stack.ss_size = mem::size_of_val(&st1);
     context.uc_stack.ss_flags = 0;
-
-
+    context.uc_link = 0 as *mut ucontext_t;
 
     //Ver como importar esta variable del ucontext_t
 
@@ -150,7 +149,7 @@ pub (crate) unsafe fn run_threads() {
 
     CURRENT_THREAD = thread;
 
-    setcontext(thread);
+//    setcontext(thread);
 
     for i in THREADS.clone(){
         if i.state != State::Off && i.state != State::Blocked {
