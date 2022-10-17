@@ -1,0 +1,11 @@
+/home/estudiante/Desktop/Repos_Git/sistemasoperativos-proyecto01/proyecto01/target/debug/deps/signal_hook-acb596e91d5dd3a0.rmeta: /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/lib.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/cleanup.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/flag.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/iterator.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/pipe.rs
+
+/home/estudiante/Desktop/Repos_Git/sistemasoperativos-proyecto01/proyecto01/target/debug/deps/libsignal_hook-acb596e91d5dd3a0.rlib: /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/lib.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/cleanup.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/flag.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/iterator.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/pipe.rs
+
+/home/estudiante/Desktop/Repos_Git/sistemasoperativos-proyecto01/proyecto01/target/debug/deps/signal_hook-acb596e91d5dd3a0.d: /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/lib.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/cleanup.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/flag.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/iterator.rs /home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/pipe.rs
+
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/lib.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/cleanup.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/flag.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/iterator.rs:
+/home/estudiante/.cargo/registry/src/github.com-1ecc6299db9ec823/signal-hook-0.1.17/src/pipe.rs:

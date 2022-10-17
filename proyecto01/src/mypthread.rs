@@ -149,7 +149,7 @@ pub (crate) unsafe fn run_threads() {
 
     CURRENT_THREAD = thread;
 
-//    setcontext(thread);
+    setcontext(thread);
 
     for i in THREADS.clone(){
         if i.state != State::Off && i.state != State::Blocked {

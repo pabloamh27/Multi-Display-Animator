@@ -13,7 +13,7 @@ pub (crate) fn init_mutex(mutex: &mut i32) {
 REVISAR ESTA FUNCION
 */
 //Funcion que se encarga de realizar guardar un nuevo valor en la variable deseada y lo retorna atomicamente seguro
-pub (crate) fn atomic_change (mutex: &mut i32) -> i32{
+/*pub (crate) fn atomic_change (mutex: &mut i32) -> i32{
     let mut aux = 1;
     asm!(
         "xchgl %0, %1;\n"
@@ -21,7 +21,7 @@ pub (crate) fn atomic_change (mutex: &mut i32) -> i32{
         : "0"(aux)
         : "memory");
     return aux;
-}
+}*/
 
 //Funcion que se encarga de llamar a la funcion de atomic_exchange
 pub (crate) fn test_and_set(mutex: &mut i32) -> i32 {
@@ -50,14 +50,14 @@ pub (crate) fn lock_mutex(mutex: &mut i32) {
 REVISAR ESTA FUNCION
 */
 //Funcion que se encarga de desbloquear el mutex
-pub (crate) fn unlock_mutex(mutex: &mut i32){
+/*pub (crate) fn unlock_mutex(mutex: &mut i32){
     let mut aux = 0;
     asm!(
         "xchgl %0, %1;\n"
         : "=r"(aux), "+m"(*lock)
         : "0"(aux)
         :"memory");
-}
+}*/
 
 
 /*
