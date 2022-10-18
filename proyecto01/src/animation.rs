@@ -1,39 +1,42 @@
 use crate::mymutex::{init_mutex, lock_mutex, destroy_mutex};
 
 
-struct monitor_info {
-    id: i32,
-    width: i32,
-    height: i32,
-    canvas_window: *WINDOW,
-    previo : *monitor_info,
-    siguiente : *monitor_info,
+pub (crate) struct monitor_info {
+    pub(crate)id: i32,
+    pub(crate)width: i32,
+    pub(crate)height: i32,
+    pub(crate)canvas_window: *WINDOW,
+    pub(crate)previo : *monitor_info,
+    pub(crate)siguiente : *monitor_info,
 }
 
-struct monitor_queue {
-    head: *monitor_info,
-    tail: *monitor_info,
-    tamano: i32,
+pub (crate) struct monitor_queue {
+    pub(crate)head: *monitor_info,
+    pub(crate)tail: *monitor_info,
+    pub(crate)size: i32,
 }
 
-struct datos_objeto {
-    x_actual: i32,
-    y_actual: i32,
-    x_final: i32,
-    y_final: i32,
-    x_inicial: i32,
-    y_inicial: i32,
-    angulo: i32,
-    tiempo_fin: i32,
-    tiempo_inicio: i32,
-    scheduler: i32,
+pub (crate) struct datos_objeto {
+    pub(crate)x_actual: i32,
+    pub(crate)y_actual: i32,
+    pub(crate)x_final: i32,
+    pub(crate)y_final: i32,
+    pub(crate)x_inicial: i32,
+    pub(crate)y_inicial: i32,
+    pub(crate)angulo: i32,
+    pub(crate)tiempo_fin: i32,
+    pub(crate)tiempo_inicio: i32,
+    pub(crate)scheduler: i32,
+    pub(crate)monitor_id: i32,
+    pub(crate)ascii_item: *char,
 }
 
-struct config {
-    x: i32,
-    y: i32,
-    tiempo: i32,
-    scheduler: i32,
+pub (crate) struct config {
+    pub(crate)protocolo: *char,
+    pub(crate)numero_monitores: i32,
+    pub(crate)monitor_list: *monitor_queue,
+    pub(crate)item_list: *datos_objeto,
+    pub(crate)espacio_entre_objetos: i32,
 }
 
 // Char para explosion de figura
@@ -65,6 +68,4 @@ pub (crate) fn init_animation() {
 pub (crate) fn move_figure() {
     let mut mutex: i32 = 0;
     lock_mutex(&mut mutex);
-
-
 }

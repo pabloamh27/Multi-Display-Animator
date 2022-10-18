@@ -2,6 +2,7 @@ use crate::mypthread_struct::{Thread, State, get_state};
 use crate::myschedulers::{my_sched_sort, my_sched_real_time, my_sched_round_robin_aux};
 use libc::{c_char, swapcontext, makecontext, getcontext, ucontext_t, c_void, setcontext, timer_settime, timer_create};
 use std::mem;
+use std::mem::transmute;
 use std::process::exit;
 
 use rand::Rng;
@@ -12,13 +13,107 @@ static mut SORT_THREADS:Vec<Thread> = Vec::new();
 static mut ACTIVE_THREADS:Vec<Thread> = Vec::new();
 
 pub static mut CURRENT_THREAD: *mut ucontext_t = 0 as *mut ucontext_t;
-
-
+pub static mut CONTEXT_RUN: *mut ucontext_t = 0 as *mut ucontext_t;
 
 //static mut signal_context = ucontext_t::default();
 pub static mut active_sched: u64 = 0;
 static mut PARENT: Option<ucontext_t> = None;
 
+
+pub (crate) unsafe fn run_threads() {
+    /*
+    Funcion que se encarga de correr los threads creados
+    Entradas: Ninguna
+    Restricciones: Ninguna
+    Salidas: Hilos ejecutados
+    */
+
+
+    for i in THREADS.clone(){
+        if i.state != State::Off && i.state != State::Blocked {
+            ACTIVE_THREADS.push(i);
+        }
+    }
+
+    getcontext(CONTEXT_RUN);
+
+    for i in ACTIVE_THREADS.clone() {
+        println!("Thread: {}", i.id);
+    }
+
+    for i in 0..ROUND_ROBIN_THREADS.len() {
+        if ROUND_ROBIN_THREADS[i].state == State::On {
+            ROUND_ROBIN_THREADS[i].state == State::Waiting;
+        }
+    }
+
+
+    // while todavía *hayan* hilos activos
+    while !ROUND_ROBIN_THREADS.is_empty() {
+        let thread:&'static mut ucontext_t  = &mut THREADS[0].context;
+
+        CURRENT_THREAD = thread;
+
+        setcontext(thread);
+
+        // Random para ver cuál sched se usa
+        //let mut rng = rand::thread_rng();
+        //let lil_coin = rng.gen_range(0..2);
+        let lil_coin = 0;
+        println!("lil_coin: {}", lil_coin);
+
+        if lil_coin == 0 {
+            // Round Robin
+            if !ROUND_ROBIN_THREADS.is_empty() {
+                ROUND_ROBIN_THREADS = my_sched_round_robin_aux(ROUND_ROBIN_THREADS.clone());
+                // no está haciendo este print why?
+                println!("ThreadRR: {}", ROUND_ROBIN_THREADS[0].id);
+                let thread:&'static mut ucontext_t  = &mut ROUND_ROBIN_THREADS[0].context;
+
+                CURRENT_THREAD = thread;
+                //Considerar el *swap_context*
+
+                let context = getcontext(thread as *mut ucontext_t);
+
+                if context == -1 {
+                    let thread_to_remove = ROUND_ROBIN_THREADS[0];
+                    for i in 0..ACTIVE_THREADS.len() {
+                        if ACTIVE_THREADS[i].id == thread_to_remove.id {
+                            ACTIVE_THREADS.remove(i);
+                            break;
+                        }
+                    }
+                }
+                else {
+                    setcontext(&mut ROUND_ROBIN_THREADS[0].context);
+                    //swapcontext(thread, &ROUND_ROBIN_THREADS[0].context); // lo probé y da el mismo error
+                }
+
+                //swapcontext(thread, &ROUND_ROBIN_THREADS[0].context);
+                //timer_create(0, 0 as *mut timer_settime, );
+            }
+
+
+        }
+        else if lil_coin == 1{
+            // Sorteo
+            if !SORT_THREADS.is_empty(){
+                SORT_THREADS = my_sched_sort(SORT_THREADS.clone());
+                SORT_THREADS[0].state = State::Ready;
+
+                // creo que aquí está el segmenation fault
+                let thread:&'static mut ucontext_t  = &mut SORT_THREADS[0].context;
+                CURRENT_THREAD = thread;
+                //Considerar el *swap_context*
+
+                setcontext(&SORT_THREADS[0].context);
+                //swapcontext(parent_match(), &SORT_THREADS[0].context);
+            }
+        }
+
+    }
+
+}
 
 //funcion para crear un hilo
 pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: isize) -> Thread{
@@ -35,11 +130,11 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
     context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
     context.uc_stack.ss_size = mem::size_of_val(&st1);
     context.uc_stack.ss_flags = 0;
-    context.uc_link = 0 as *mut ucontext_t;
+    //context.uc_link = 0 as *mut ucontext_t;
 
     //Ver como importar esta variable del ucontext_t
 
-    makecontext(&mut context as *mut ucontext_t, func, 0);
+    makecontext(&mut context as *mut ucontext_t, transmute(func), 2, 0 as *mut ucontext_t, CONTEXT_RUN);
     let mut new_thread = Thread {id:(get_number_of_threads() + 1), state: State::On, tickets: 1,
         scheduler: 0, context
     };
@@ -138,96 +233,7 @@ pub (crate) unsafe fn my_thread_chsched(scheduler_type: isize, mut thread: Threa
 }
 
 
-pub (crate) unsafe fn run_threads() {
-    /*
-    Funcion que se encarga de correr los threads creados
-    Entradas: Ninguna
-    Restricciones: Ninguna
-    Salidas: Hilos ejecutados
-    */
-    let thread:&'static mut ucontext_t  = &mut THREADS[0].context;
 
-    CURRENT_THREAD = thread;
-
-    setcontext(thread);
-
-    for i in THREADS.clone(){
-        if i.state != State::Off && i.state != State::Blocked {
-            ACTIVE_THREADS.push(i);
-        }
-    }
-
-    for i in ACTIVE_THREADS.clone() {
-        println!("Thread: {}", i.id);
-    }
-
-    for i in 0..ROUND_ROBIN_THREADS.len() {
-        if ROUND_ROBIN_THREADS[i].state == State::On {
-            ROUND_ROBIN_THREADS[i].state == State::Waiting;
-        }
-    }
-
-    // while todavía *hayan* hilos activos
-    while !ROUND_ROBIN_THREADS.is_empty() {
-
-        // Random para ver cuál sched se usa
-        //let mut rng = rand::thread_rng();
-        //let lil_coin = rng.gen_range(0..2);
-        let lil_coin = 0;
-        println!("lil_coin: {}", lil_coin);
-
-        if lil_coin == 0 {
-            // Round Robin
-            if !ROUND_ROBIN_THREADS.is_empty() {
-                ROUND_ROBIN_THREADS = my_sched_round_robin_aux(ROUND_ROBIN_THREADS.clone());
-                // no está haciendo este print why?
-                println!("ThreadRR: {}", ROUND_ROBIN_THREADS[0].id);
-                let thread:&'static mut ucontext_t  = &mut ROUND_ROBIN_THREADS[0].context;
-
-                CURRENT_THREAD = thread;
-                //Considerar el *swap_context*
-
-                let context = getcontext(thread as *mut ucontext_t);
-
-                if context == -1 {
-                    let thread_to_remove = ROUND_ROBIN_THREADS[0];
-                    for i in 0..ACTIVE_THREADS.len() {
-                        if ACTIVE_THREADS[i].id == thread_to_remove.id {
-                            ACTIVE_THREADS.remove(i);
-                            break;
-                        }
-                    }
-                }
-                else {
-                    setcontext(&mut ROUND_ROBIN_THREADS[0].context);
-                    //swapcontext(thread, &ROUND_ROBIN_THREADS[0].context); // lo probé y da el mismo error
-                }
-
-                //swapcontext(thread, &ROUND_ROBIN_THREADS[0].context);
-                //timer_create(0, 0 as *mut timer_settime, );
-            }
-
-
-        }
-        else if lil_coin == 1{
-            // Sorteo
-            if !SORT_THREADS.is_empty(){
-                SORT_THREADS = my_sched_sort(SORT_THREADS.clone());
-                SORT_THREADS[0].state = State::Ready;
-
-                // creo que aquí está el segmenation fault
-                let thread:&'static mut ucontext_t  = &mut SORT_THREADS[0].context;
-                CURRENT_THREAD = thread;
-                //Considerar el *swap_context*
-
-                setcontext(&SORT_THREADS[0].context);
-                //swapcontext(parent_match(), &SORT_THREADS[0].context);
-            }
-        }
-
-    }
-
-}
 
 
 
