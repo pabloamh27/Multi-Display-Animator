@@ -5,6 +5,9 @@ use crate::mypthread::{my_thread_create};
 //use crate::mycanvas::{init_canvas};
 mod mypthread_struct;
 mod myschedulers;
+
+#[path = "parser.rs"] mod parser;
+
 /*
 mod animation;
 mod parser;
@@ -43,10 +46,12 @@ pub fn main() {
     //let i = 0;
     //init_canvas();
 
-    unsafe {
-        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(transmute(f1), 1);
-        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f2, 1);
-        mypthread::run_threads();
-    }
-    return;
+    //unsafe {
+      //  let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(transmute(f1), 1);
+      //  let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f2, 1);
+      //  mypthread::run_threads();
+    //}
+    //return;
+
+
 }
