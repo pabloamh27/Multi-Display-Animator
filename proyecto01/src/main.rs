@@ -2,10 +2,12 @@ mod mypthread;
 
 use crate::mypthread::{CURRENT_THREAD, EXIT_CONTEXT, my_thread_create};
 //use crate::animation::{init_animation, move_figure};
-//use crate::mycanvas::{init_canvas};
+use crate::mycanvas::{init_canvas};
 mod mypthread_struct;
 mod myschedulers;
 use animation::{EXPLOSION_INICIO, EXPLOSION_MITAD, EXPLOSION_FINAL};
+use ncurses;
+
 
 #[path = "parser.rs"] mod parser;
 
@@ -14,8 +16,9 @@ mod animation;
 /*
 mod parser;
 mod mymutex;
-mod mycanvas;
 */
+mod mycanvas;
+
 use std::time;
 use std::thread::sleep;
 use libc::{getcontext, setcontext, swapcontext, ucontext_t};

@@ -1,17 +1,17 @@
-use ncurses::{initscr, noecho, curs_set};
+use ncurses::{initscr, noecho, curs_set, FALSE};
 use crate::animation;
-use crate::animation::{monitor_info, monitor_queue, datos_objeto, config};
+//use crate::animation::{monitor_info, monitor_queue, datos_objeto, config};
 
-static mut configuracion : config = config {x: 0, y: 0, tiempo: 0, scheduler: 0};
+//static mut configuracion : config = config {x: 0, y: 0, tiempo: 0, scheduler: 0};
 
 pub (crate) fn init_canvas() {
     let mut x = 0;
     let mut y = 0;
     initscr();
     noecho();
-    curs_set(false);
+    curs_set(FALSE);
 
-    let mut temp_monitor = *monitor_info {
+    /*let mut temp_monitor = *monitor_info {
         id: i32,
         width: i32,
         height: i32,
@@ -19,4 +19,5 @@ pub (crate) fn init_canvas() {
         previo : *monitor_info,
        siguiente : *monitor_info,
     };
+    */
 }
