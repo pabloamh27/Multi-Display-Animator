@@ -11,13 +11,18 @@ static mut THREADS:Vec<Thread> = Vec::new();
 static mut ROUND_ROBIN_THREADS:Vec<Thread> = Vec::new();
 static mut SORT_THREADS:Vec<Thread> = Vec::new();
 static mut ACTIVE_THREADS:Vec<Thread> = Vec::new();
+static mut CONTEXT_RUN_INIT: i32 = 0;
 
 pub static mut CURRENT_THREAD: *mut ucontext_t = 0 as *mut ucontext_t;
-pub static mut CONTEXT_RUN: *mut ucontext_t = 0 as *mut ucontext_t;
+pub static mut EXIT_CONTEXT: *mut ucontext_t = 0 as *mut ucontext_t;
 
 //static mut signal_context = ucontext_t::default();
 pub static mut active_sched: u64 = 0;
 static mut PARENT: Option<ucontext_t> = None;
+
+pub (crate) unsafe fn init_context_run(){
+    run_threads();
+}
 
 
 pub (crate) unsafe fn run_threads() {
@@ -28,6 +33,7 @@ pub (crate) unsafe fn run_threads() {
     Salidas: Hilos ejecutados
     */
 
+    ACTIVE_THREADS = [].to_vec();
 
     for i in THREADS.clone(){
         if i.state != State::Off && i.state != State::Blocked {
@@ -35,7 +41,14 @@ pub (crate) unsafe fn run_threads() {
         }
     }
 
-    getcontext(CONTEXT_RUN);
+    let mut context: ucontext_t = mem::uninitialized();
+    getcontext(&mut context as *mut ucontext_t);
+
+    if CONTEXT_RUN_INIT == 0 {
+        EXIT_CONTEXT = &mut context as *mut ucontext_t;
+        CONTEXT_RUN_INIT = 1;
+        return;
+    }
 
     for i in ACTIVE_THREADS.clone() {
         println!("Thread: {}", i.id);
@@ -134,7 +147,7 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
 
     //Ver como importar esta variable del ucontext_t
 
-    makecontext(&mut context as *mut ucontext_t, transmute(func), 2, 0 as *mut ucontext_t, CONTEXT_RUN);
+    makecontext(&mut context as *mut ucontext_t, func, 1, EXIT_CONTEXT);
     let mut new_thread = Thread {id:(get_number_of_threads() + 1), state: State::On, tickets: 1,
         scheduler: 0, context
     };

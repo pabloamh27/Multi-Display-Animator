@@ -1,4 +1,4 @@
-use crate::mymutex::{init_mutex, lock_mutex, destroy_mutex};
+/*use crate::mymutex::{init_mutex, lock_mutex, destroy_mutex};
 
 
 pub (crate) struct monitor_info {
@@ -37,29 +37,33 @@ pub (crate) struct config {
     pub(crate)monitor_list: *monitor_queue,
     pub(crate)item_list: *datos_objeto,
     pub(crate)espacio_entre_objetos: i32,
-}
+}*/
 
-// Char para explosion de figura
-static mut Top: char = {' '; ' '; ' '; ' '; ' '; ' ';' ';' ';' ';' ';' '};
-static mut secTop: char ={' '; ' '; ' '; ' '; ' '; ' ';' ';' ';' ';' ';' '};
-static mut Mid: char = {' '; ' '; ' '; ' '; ' '; ' ';' ';' ';' ';' ';' '};
-static mut secBot: char ={' '; ' '; ' '; ' '; ' '; ' ';' ';' ';' ';' ';' '};
-static mut Bot: char = {' '; ' '; ' '; ' '; ' '; ' ';' ';' ';' ';' ';' '};
 
-// Char para explosion de figura
-static mut TopExp: char =  {' '; ' '; ' '; ' '; ' '; ' ';' ';' ';' ';' '};
-static mut sexTopExp: char ={' '; ' '; '*'; '*'; '*'; ' ';' ';' ';' ';' '};
-static mut MidExp: char = {' '; ' '; '*'; '*'; '*'; '*';'*';' ';' ';' '};
-static mut secBotExp: char = {' '; ' '; '*'; '*'; '*'; ' ';' ';' ';' ';' '};
-static mut BotExp: char ={' '; ' '; ' '; ' '; ' '; ' ';' ';' ';' ';' '};
+pub static mut EXPLOSION_INICIO: &str = "                      *                       \n
+                                                        *******                    \n
+                                                    ***************                \n
+                                                  *******************              \n
+                                                    ***************                \n
+                                                        *******                    \n
+                                                           *                      ";
 
-// Char para explosion de figura
-static mut TopExpFinal: char ={' '; ' '; ' '; '*'; '*'; '*';' ';' ';' ';' '};
-static mut secTopExpFinal: char ={' '; ' '; '*'; '*'; '*'; '*';'*';' ';' ';' '};
-static mut MidExpFinal: char = {' '; '*'; '*'; '*'; '*'; '*';'*';'*';' ';' '};
-static mut secBotExpFinal: char = {' '; ' '; '*'; '*'; '*'; '*';'*';' ';' ';' '};
-static mut BotFinal: char = {' '; ' '; ' '; '*'; '*'; '*';' ';' ';' ';' '};
+pub static mut EXPLOSION_MITAD: &str =  "        ***       *********       **          \n
+                                        *        *********************       *     \n
+                                           *********************************       \n
+                                        ***************************************    \n
+                                      *    *********************************  **   \n
+                                           *     *********************             \n
+                                       *               *********              **   ";
 
+pub static mut EXPLOSION_FINAL: &str =  "                                              \n
+                                                          ***                      \n
+                                                        *******                    \n
+                                                     *************                 \n
+                                                        *******                    \n
+                                                          ***                      \n
+                                                                                  ";
+/*
 pub (crate) fn init_animation() {
     let mut mutex: i32 = 0;
     my_mutex::init_mutex(&mut mutex);
@@ -68,4 +72,4 @@ pub (crate) fn init_animation() {
 pub (crate) fn move_figure() {
     let mut mutex: i32 = 0;
     lock_mutex(&mut mutex);
-}
+}*/
