@@ -1,4 +1,4 @@
-use ncurses::{initscr, noecho, curs_set, FALSE, CURSOR_VISIBILITY};
+/*use ncurses::{initscr, noecho, curs_set, FALSE, CURSOR_VISIBILITY};
 use crate::animation;
 //use crate::animation::{monitor_info, monitor_queue, datos_objeto, config};
 
@@ -21,3 +21,4 @@ pub (crate) fn init_canvas() {
     };
 
 }
+*/
