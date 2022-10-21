@@ -13,10 +13,9 @@ use ncurses;
 
 
 mod animation;
-/*
-mod parser;
+
 mod mymutex;
-*/
+
 mod mycanvas;
 
 use std::time;
@@ -29,36 +28,13 @@ use std::mem::transmute;
 // Función de ejemplo
 extern "C" fn f1() {
     unsafe {
-    static mut explosion_inicio: &str = "                                                           *                       \n
-                                                        *******                    \n
-                                                    ***************                \n
-                                                  *******************              \n
-                                                    ***************                \n
-                                                        *******                    \n
-                                                           *                      \n";
-
-    static mut explosion_mitad: &str =  "                                             ***       *********       **          \n
-                                        *        *********************       *     \n
-                                           *********************************       \n
-                                        ***************************************    \n
-                                      *    *********************************  **   \n
-                                           *     *********************             \n
-                                       *               *********              **   \n";
-
-    static mut explosion_final: &str =  "                                              \n
-                                                          ***                      \n
-                                                        *******                    \n
-                                                     *************                 \n
-                                                        *******                    \n
-                                                          ***                      \n
-                                                                                  \n";
-    println!("{}", explosion_inicio);
+    println!("{}", EXPLOSION_INICIO);
         sleep(time::Duration::from_millis(350));
         std::process::Command::new("clear").status().unwrap();
-    println!("{}", explosion_mitad);
+    println!("{}", EXPLOSION_MITAD);
         sleep(time::Duration::from_millis(350));
         std::process::Command::new("clear").status().unwrap();
-    println!("{}", explosion_final);
+    println!("{}", EXPLOSION_FINAL);
         setcontext(EXIT_CONTEXT);
     }
 }
