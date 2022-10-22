@@ -8,8 +8,7 @@ mod myschedulers;
 use animation::{EXPLOSION_INICIO, EXPLOSION_MITAD, EXPLOSION_FINAL};
 use ncurses;
 
-
-#[path = "parser.rs"] mod parser;
+#[path = "parser/parser.rs"] mod parser;
 
 
 mod animation;

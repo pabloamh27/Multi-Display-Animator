@@ -1,4 +1,4 @@
-use crate::mymutex::{init_mutex, lock_mutex, destroy_mutex};
+//use crate::mymutex::{init_mutex, lock_mutex, destroy_mutex};
 use ncurses::{WINDOW};
 
 pub (crate) struct monitor_info {
@@ -65,11 +65,7 @@ pub static mut EXPLOSION_FINAL: &str =  "                                       
                                                                                   ";
 
 pub (crate) fn init_animation() {
-    let mut mutex: i32 = 0;
-    init_mutex(&mut mutex);
 }
 
 pub (crate) fn move_figure() {
-    let mut mutex: i32 = 0;
-    lock_mutex(&mut mutex);
 }

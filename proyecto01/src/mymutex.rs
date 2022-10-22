@@ -2,10 +2,23 @@ use std::arch::asm;
 use std::thread::sleep;
 use std::time::Duration;
 use libc::usleep;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+/*
+#[derive(Debug, Default)]
+struct Mutex {
+    is_acquired: AtomicBool,
+}
+impl Mutex {
+    fn acquire(&self) {
+        while !self.is_acquired.swap(true, Ordering::AcqRel) {
+            // wait
+        }
+    }
 
-//Funcion que se encarga de inicializar el lock
-pub (crate) fn init_mutex(mutex: &mut i32) {
-    mutex = &mut 0;
+    fn release(&self) {
+        self.is_acquired.store(false, Ordering::Release);
+    }
 }
 
 
@@ -70,4 +83,4 @@ pub (crate) unsafe fn try_lock_mutex(mutex: &mut i32){
     }
     test_and_set(mutex);
 }
-
+*/
