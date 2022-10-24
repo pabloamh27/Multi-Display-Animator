@@ -37,6 +37,7 @@ extern "C" fn f1() {
         setcontext(EXIT_CONTEXT);
     }
 }
+
 extern "C" fn f2() {
     println!("INICIO 2");
     println!("FIN 2");
@@ -46,16 +47,16 @@ extern "C" fn f2() {
         setcontext(thread);
     }
 }
-/*
-extern "C" fn mover_figura() {
-    move_figure();
-}*/
+
 
 pub fn main() {
-    //let mut datos = parser::parse("input.txt");
-    //let i = 0;
-    //init_canvas();
+    let data = parser::load_file();
 
+    let object: parser::animation_args = parser::parse_object_args(data);
+
+    parser::print_animation_args(&object);
+    //init_canvas();
+    //init_animation();
     unsafe {
         mypthread::init_context_run();
         //let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(transmute::<fn(*mut ucontext_t), extern "C" fn()>(f1), 1);

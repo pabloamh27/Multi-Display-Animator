@@ -18,6 +18,15 @@ pub (crate) fn init_canvas() {
         canvas_window: 0 as *mut WINDOW,
         previo : *monitor_info,
        siguiente : *monitor_info,
-    };*/
+    };
+
+    while(temp_monitor!=0){
+        temp.monitor.canvas_window = newwin(temp_monitor.height, temp_monitor.width, y, x);
+        x += temp_monitor.width;
+        box(temp_monitor.canvas_window, 0, 0);
+        wrefresh(temp_monitor.canvas_window);
+        temp_monitor = temp_monitor.siguiente;
+
+     */
 
 }
