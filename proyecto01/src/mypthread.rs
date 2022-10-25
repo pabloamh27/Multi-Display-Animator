@@ -48,6 +48,7 @@ pub (crate) unsafe fn run_threads() {
         context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
         context.uc_stack.ss_size = mem::size_of_val(&st1);
         context.uc_stack.ss_flags = 0;
+        //context.uc_link = parent_match() as *mut ucontext_t;
         makecontext(&mut context as *mut ucontext_t, transmute::<unsafe fn(), extern "C" fn()>(run_threads), 0);
         EXIT_CONTEXT = &mut context as *mut ucontext_t;
         CONTEXT_RUN_INIT = 1;
@@ -147,7 +148,7 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
     context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
     context.uc_stack.ss_size = mem::size_of_val(&st1);
     context.uc_stack.ss_flags = 0;
-    //context.uc_link = 0 as *mut ucontext_t;
+    context.uc_link = parent_match() as *mut ucontext_t;
 
     //Ver como importar esta variable del ucontext_t
 
@@ -200,6 +201,52 @@ pub (crate) unsafe fn parent_match() -> &'static mut ucontext_t{
     match PARENT {
         Some(ref mut x) => &mut *x,
         None => panic!(),
+    }
+}
+
+//funcion para saber si un hilo tiene padre
+pub (crate) unsafe fn child_match(i:usize) -> &'static mut ucontext_t{
+    match THREADS[i].context {
+        ref mut x => &mut *x,
+    }
+}
+
+
+pub (crate) unsafe fn init_handler(s:isize, q:u32) -> rb_thread_handler{
+    unsafe{PARENT = Some(mem::uninitialized());}
+    let mut handler = rb_thread_handler {sche_type:s, quatum_time:q};
+    return handler;
+}
+
+
+pub struct rb_thread_handler {
+    pub sche_type: isize,
+    pub quatum_time:u32
+}impl rb_thread_handler {
+    pub fn start_threads(&mut self) {
+        // "self" refers to the value this method is being called on
+        if self.sche_type == 1 {
+            println!("RoundRobin");
+            self.sch_round_robin();
+        } else if self.sche_type == 2 {
+            println!("Priority time");
+        }
+    }
+    pub fn sch_round_robin(&mut self) {
+        unsafe{
+            let mut i:usize =0;
+            while i != THREADS.len(){
+                my_thread_yield(parent_match() as *mut ucontext_t, child_match(i) as *const ucontext_t );
+                i+=1;
+            }
+        }
+
+    }
+
+
+
+    pub fn thread_chsched(&mut self, sche:isize){
+        self.sche_type = sche;
     }
 }
 

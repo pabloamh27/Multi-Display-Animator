@@ -3,7 +3,8 @@ use std::io::prelude::*;
 use std::io::{BufReader, Read};
 
 pub(crate) fn load_file() -> Vec<String> {
-    let mut file = File::open("/home/estudiante/Escritorio/S.O/proyecto1/sistemasoperativos-proyecto01/proyecto01/src/parser/animation.txt").expect("file not found");
+    //let mut file = File::open("/home/estudiante/Escritorio/S.O/proyecto1/sistemasoperativos-proyecto01/proyecto01/src/parser/animation.txt").expect("file not found");
+    let mut file = File::open("/home/estudiante/Desktop/Repos_Git/sistemasoperativos-proyecto01/proyecto01/src/parser/animation.txt").expect("file not found");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .expect("something went wrong reading the file");
