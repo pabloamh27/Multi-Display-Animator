@@ -12,6 +12,7 @@ static mut ROUND_ROBIN_THREADS:Vec<Thread> = Vec::new();
 static mut SORT_THREADS:Vec<Thread> = Vec::new();
 static mut ACTIVE_THREADS:Vec<Thread> = Vec::new();
 static mut CONTEXT_RUN_INIT: i32 = 0;
+static mut DEAD_THREADS:Vec<Thread> = Vec::new();
 
 pub static mut CURRENT_THREAD: *mut ucontext_t = 0 as *mut ucontext_t;
 pub static mut EXIT_CONTEXT: *mut ucontext_t = 0 as *mut ucontext_t;
@@ -148,8 +149,7 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
     context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
     context.uc_stack.ss_size = mem::size_of_val(&st1);
     context.uc_stack.ss_flags = 0;
-    context.uc_link = parent_match() as *mut ucontext_t;
-
+    context.uc_link = parent_match() as *mut ucontext_t;;
     //Ver como importar esta variable del ucontext_t
 
     makecontext(&mut context as *mut ucontext_t, func, 0);
@@ -205,25 +205,27 @@ pub (crate) unsafe fn parent_match() -> &'static mut ucontext_t{
 }
 
 //funcion para saber si un hilo tiene padre
-pub (crate) unsafe fn child_match(i:usize) -> &'static mut ucontext_t{
-    match THREADS[i].context {
-        ref mut x => &mut *x,
+pub (crate) unsafe fn child_match(i:usize) -> &'static mut ucontext_t {
+        match THREADS[i].context {
+            ref mut x => &mut *x,
+
     }
 }
 
 
 pub (crate) unsafe fn init_handler(s:isize, q:u32) -> rb_thread_handler{
     unsafe{PARENT = Some(mem::uninitialized());}
-    let mut handler = rb_thread_handler {sche_type:s, quatum_time:q};
+    let mut handler = rb_thread_handler {sche_type:s, quantum_time:q};
     return handler;
 }
 
 
 pub struct rb_thread_handler {
     pub sche_type: isize,
-    pub quatum_time:u32
+    pub quantum_time:u32
 }impl rb_thread_handler {
-    pub fn start_threads(&mut self) {
+    pub unsafe fn start_threads(&mut self) {
+        EXIT_CONTEXT = parent_match() as *mut ucontext_t;
         // "self" refers to the value this method is being called on
         if self.sche_type == 1 {
             println!("RoundRobin");
@@ -232,19 +234,18 @@ pub struct rb_thread_handler {
             println!("Priority time");
         }
     }
-    pub fn sch_round_robin(&mut self) {
-        unsafe{
-            let mut i:usize =0;
-            while i != THREADS.len(){
-                my_thread_yield(parent_match() as *mut ucontext_t, child_match(i) as *const ucontext_t );
-                i+=1;
+    pub unsafe fn sch_round_robin(&mut self) {
+        let mut i = 0;
+            while ROUND_ROBIN_THREADS.len() != DEAD_THREADS.len() {
+                println!("{}", ROUND_ROBIN_THREADS.len());
+                println!("{}", DEAD_THREADS.len());
+                CURRENT_THREAD = &mut ROUND_ROBIN_THREADS[i].context as *mut ucontext_t;
+                println!("Hilo: {}", ROUND_ROBIN_THREADS[i].id);
+                my_thread_yield(EXIT_CONTEXT, child_match(i) as *const ucontext_t);
+                DEAD_THREADS.push(ROUND_ROBIN_THREADS[i]);
+                i += 1;
             }
-        }
-
     }
-
-
-
     pub fn thread_chsched(&mut self, sche:isize){
         self.sche_type = sche;
     }
