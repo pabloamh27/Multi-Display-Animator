@@ -1,6 +1,6 @@
 mod mypthread;
 
-use crate::mypthread::{child_match, CURRENT_THREAD, EXIT_CONTEXT, init_handler, my_thread_create, my_thread_yield};
+use crate::mypthread::{child_match, CURRENT_THREAD, EXIT_CONTEXT, start_manager, my_thread_create, my_thread_yield};
 //use crate::animation::{init_animation, move_figure};
 use crate::mycanvas::{init_canvas};
 mod mypthread_struct;
@@ -25,28 +25,11 @@ use std::mem;
 use std::mem::transmute;
 
 // Función de ejemplo
-extern "C" fn f1() {
-    unsafe {
-        println!("INICIO 1");
-        println!("FIN 1");
+extern "C" fn thread(input: &mut String) {
+    println!("{}", input);
+    unsafe  {
+        my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT);
     }
-}
-
-extern "C" fn f2() {
-    println!("INICIO 2");
-    println!("FIN 2");
-    unsafe {my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT );}
-}
-
-extern "C" fn f3() {
-    println!("INICIO 3");
-    println!("FIN 3");
-    unsafe {my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT );}
-}
-
-extern "C" fn f4() {
-    println!("INICIO 4");
-    println!("FIN 4");
 }
 
 
@@ -59,15 +42,33 @@ pub fn main() {
     //init_canvas();
     //init_animation();
     unsafe {
-        let mut HANDLER = init_handler(1, 1);
-        //mypthread::init_context_run();
-        //let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(transmute::<fn(*mut ucontext_t), extern "C" fn()>(f1), 1);
-        //let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(transmute::<fn(*mut ucontext_t), extern "C" fn()>(f2), 1);
-        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f1, 1);
-        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f2, 1);
-        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f3, 1);
-        let mut new_thread: mypthread_struct::Thread = mypthread::my_thread_create(f4, 1);
-        HANDLER.start_threads();
+        //Se ingresa el tipo de scheduler a correr y el quantum a seleccionar
+        /*
+        1: Round Robin
+        2: Sort
+        3: Real Time
+        Recomendamos un Quantum de 200
+        */
+        //Prueba con Round Robin
+        let mut scheduler_type: isize = 1;
+        //Prueba con Sorteo
+        //let mut scheduler_type: isize = 2;
+        //Prueba con Real Time
+        //let mut scheduler_type: isize = 3;
+        let mut thread_manager = start_manager(scheduler_type, 200);
+        let mut text_vec : Vec<&mut String> = Vec::new();
+        let mut text: &mut String = &mut "Primer hilo".to_string();
+        text_vec.push(text);
+        let mut text:&mut String = &mut "Segundo Hilo".to_string();
+        text_vec.push(text);
+        let mut text:&mut String = &mut "Tercer hilo".to_string();
+        text_vec.push(text);
+        let mut text: &mut String = &mut "Cuarto hilo".to_string();
+        text_vec.push(text);
+        for i in text_vec{
+            my_thread_create(transmute::<extern "C" fn(&mut String),extern "C" fn()>(thread), 1, i);
+        }
+        thread_manager.run_threads();
     }
     return;
 
