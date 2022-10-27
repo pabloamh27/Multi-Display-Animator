@@ -14,12 +14,15 @@ use ncurses::refresh;
 use ncurses::clear;
 use ncurses::endwin;
 use libc::{c_uint, usleep};
-static DELAY:u64 = 1000000;
-static DELAY_running:u32 = 1000;
+use ncurses::ll::newwin;
+use crate::mypthread::{CURRENT_THREAD, EXIT_CONTEXT, my_thread_yield};
+
+static DELAY:u64 = 10000;
+static DELAY_running:u32 = 100000;
 static LOOP:bool = true;
 
 
-pub(crate) fn animation_fn(animation_struct: animation_args) {
+pub(crate) unsafe fn animation_fn(animation_struct: animation_args) {
 
     let mut x = animation_struct.start_pos.1;
     let mut y = animation_struct.start_pos.0;
@@ -32,29 +35,25 @@ pub(crate) fn animation_fn(animation_struct: animation_args) {
     let mut canva_X = animation_struct.weight;
     let mut canva_Y = animation_struct.height;
 
-    let mut next_x = 0;
-
-    let mut direction = 1;
-
     initscr();
     noecho();
 
     let mut window = stdscr();
     getmaxyx(window, &mut canva_Y, &mut canva_X);
-
+    refresh();
     //x = max_X / 2;
     //y = max_Y / 2;
 
     let mut ascii = animation_struct.ascii_object.clone();
 
-    while LOOP {
+    /*while x != x_objective || y != y_objective {
         getmaxyx(window, &mut canva_Y, &mut canva_X);
 
         y = canva_Y / 2;
         clear();
-
-        for i in &ascii {
-            unsafe{usleep(DELAY_running as c_uint)};
+        //ascii = rotate_90(&mut ascii).to_vec();
+        for i in ascii.iter() {
+            //unsafe{usleep(DELAY_running as c_uint)};
             mvprintw(y, x, &*i);
             if x != x_objective {
                 if y != y_objective {
@@ -63,17 +62,16 @@ pub(crate) fn animation_fn(animation_struct: animation_args) {
                 else {
                     x += 1;
                 }
-
             }
             else {
-                if y != y_objective {
+                if y <= y_objective {
                     y += 1;
                 }
                 else {
                     continue;
                 }
             }
-            unsafe{usleep(DELAY_running as c_uint)};
+            //unsafe{usleep(DELAY_running as c_uint)};
 
             /*mvprintw(y, x, &*i);
             y += 1;*/
@@ -84,12 +82,12 @@ pub(crate) fn animation_fn(animation_struct: animation_args) {
         unsafe{usleep(DELAY as c_uint)};
 
         if next_x == canva_X - 1 {
-            endwin();
+            refresh();
+            //my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT);
+            //return;
         } else {
             next_x = x + direction;
         }
-
-
         if next_x >= canva_X - 10 || next_x < 0 {
             direction= -1;
         }
@@ -97,19 +95,34 @@ pub(crate) fn animation_fn(animation_struct: animation_args) {
         {
             x += direction;
         }
+    }*/
+
+    y = canva_Y / 2;
+
+    while x <= x_objective && y <= y_objective{
+        for i in ascii.iter() {
+            mvprintw(y, x, &*i);
+            y += 1;
+        }
     }
+    
     endwin();
+    refresh();
+    //my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT);
 }
 
-/*pub(crate) fn rotate_90(ascii: &mut Vec<String>) {
-    return_vec: Vec<String> = Vec::new();
-    for i in ascii.iter_mut() {
-        let mut temp = i.clone();
 
-    return return_vec;
-    }
-}*/
 
+/*def rotate90Clockwise(A):
+N = len(A[0])
+for i in range(N // 2):
+    for j in range(i, N - i - 1):
+        temp = A[i][j]
+    A[i][j] = A[N - 1 - j][i]
+A[N - 1 - j][i] = A[N - 1 - i][N - 1 - j]
+A[N - 1 - i][N - 1 - j] = A[j][N - 1 - i]
+A[j][N - 1 - i] = temp
+*/
 
 
 

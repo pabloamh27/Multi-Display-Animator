@@ -5,9 +5,8 @@ use libc::ucontext_t;
 pub struct Thread {
     pub(crate) id: usize,
     pub(crate) state: State,
-    pub(crate) scheduler: isize,
     pub(crate) context: ucontext_t,
-    pub(crate) tickets: u64,
+    pub(crate) tickets: i32,
 }
 
 
@@ -23,11 +22,10 @@ pub enum State {
 
 // implementación de la estructura de datos de pthread (hilos)
 impl Thread {
-    fn new(id: usize, state: State, scheduler: isize, priority: u64, context: ucontext_t,tickets: u64) -> Thread {
+    fn new(id: usize, state: State, scheduler: isize, priority: u64, context: ucontext_t,tickets: i32) -> Thread {
         Thread {
             id: id,
             state: state,
-            scheduler: scheduler,
             context: context,
             tickets: tickets,
         }

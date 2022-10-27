@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufReader, Read};
+use ncurses::TRUE;
 
 pub(crate) fn load_file() -> Vec<String> {
     //let mut file = File::open("/home/estudiante/Escritorio/S.O/proyecto1/sistemasoperativos-proyecto01/proyecto01/src/parser/animation.txt").expect("file not found");
@@ -15,55 +16,58 @@ pub(crate) fn load_file() -> Vec<String> {
     return lines;
 }
 
+#[derive(Clone)]
 pub (crate) struct animation_args {
     pub (crate) weight: i32,
     pub (crate) height: i32,
-    pub (crate) scheduler: i32,
+    pub (crate) tickets: i32,
     pub (crate) duration: i32,
     pub (crate) start_pos: (i32, i32),
     pub (crate) end_pos: (i32, i32),
     pub (crate) rotation: i32,
-    pub (crate) ascii_object: Vec<String>
+    pub (crate) ascii_object: Vec<String>,
 }
 
-pub(crate) fn parse_object_args(mut data: Vec<String>) -> Vec<animation_args> {
-    let mut objects: Vec<animation_args> = Vec::new();
+
+pub(crate) fn fill_object (mut data: Vec<String>) -> animation_args{
     let size: Vec<&str> = data[1].split(":").collect();
     let mut args = animation_args {
         weight: size[1].split(",").collect::<Vec<&str>>()[0].parse::<i32>().unwrap(),
         height: size[1].split(",").collect::<Vec<&str>>()[1].parse::<i32>().unwrap(),
-        scheduler: data[2].split(":").collect::<Vec<&str>>()[1].parse::<i32>().unwrap(),
+        tickets: data[2].split(":").collect::<Vec<&str>>()[1].parse::<i32>().unwrap(),
         duration: data[3].split(":").collect::<Vec<&str>>()[1].parse::<i32>().unwrap(),
         start_pos: (data[4].split(":").collect::<Vec<&str>>()[1].split(",").collect::<Vec<&str>>()[0].parse::<i32>().unwrap(),
                     data[4].split(":").collect::<Vec<&str>>()[1].split(",").collect::<Vec<&str>>()[1].parse::<i32>().unwrap()),
         end_pos: (data[5].split(":").collect::<Vec<&str>>()[1].split(",").collect::<Vec<&str>>()[0].parse::<i32>().unwrap(),
                   data[5].split(":").collect::<Vec<&str>>()[1].split(",").collect::<Vec<&str>>()[1].parse::<i32>().unwrap()),
         rotation: data[6].split(":").collect::<Vec<&str>>()[1].parse::<i32>().unwrap(),
-        ascii_object: get_ascii_object(data)
+        ascii_object: get_ascii_object(data.clone())
     };
-    objects.push(args);
+    return args;
+}
 
-    while  {
 
-    } {
-        if data[1].to_string() == "next"{
-            data.remove(1);
+pub(crate) fn parse_object_args(mut data: Vec<String>) -> Vec<animation_args> {
+    let mut objects: Vec<animation_args> = Vec::new();
+    //--------------------------------------------------
+    while data.len() > 0 {
+        if data[0].to_string() == "start"{
+            objects.push(fill_object(data.clone()));
+            data.remove(0);
+        }
+        else if data[0].to_string() == "next"{
+            objects.push(fill_object(data.clone()));
+            data.remove(0);
+        }
+        else if data[0].to_string() == "end" {
             break;
         }
         else {
-            data.remove(1);
+            data.remove(0);
         }
     }
-
-    if data.len() != 1 {
-        parse_object_args(data.clone());
-    }
-
-
-
     return objects;
 }
-
 
 pub (crate) fn get_ascii_object(data: Vec<String>) -> Vec<String> {
     let mut ascii_object: Vec<String> = Vec::new();
@@ -80,7 +84,7 @@ pub (crate) fn get_ascii_object(data: Vec<String>) -> Vec<String> {
 pub(crate) fn print_animation_args(args: &animation_args) {
     println!("weight: {}", args.weight);
     println!("height: {}", args.height);
-    println!("scheduler: {}", args.scheduler);
+    println!("scheduler: {}", args.tickets);
     println!("duration: {}", args.duration);
     println!("start_pos: ({}, {})", args.start_pos.0, args.start_pos.1);
     println!("end_pos: ({}, {})", args.end_pos.0, args.end_pos.1);

@@ -134,7 +134,35 @@ pub (crate) unsafe fn run_threads() {
 */
 
 //funcion para crear un hilo
-pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: isize, object : parser::animation_args) -> Thread{
+pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: isize, index: usize) -> Thread{
+
+    // sheduler_type = 0 -> Round Robin
+    // sheduler_type = 1 -> Sorteo
+    let mut rng = rand::thread_rng();
+    let sheduler_type = rng.gen_range(0..2);
+
+    let mut st1: [c_char; 10000] = [mem::zeroed(); 10000];
+    let mut context: ucontext_t = mem::uninitialized();
+
+    getcontext(&mut context as *mut ucontext_t);
+    context.uc_stack.ss_sp = st1.as_mut_ptr() as *mut c_void;
+    context.uc_stack.ss_size = mem::size_of_val(&st1);
+    context.uc_stack.ss_flags = 0;
+    context.uc_link = parent_match() as *mut ucontext_t;;
+    //Ver como importar esta variable del ucontext_t
+
+    makecontext(&mut context as *mut ucontext_t, func, 1, index);
+    let mut new_thread = Thread {id:(get_number_of_threads() + 1), state: State::On, tickets: 1, context};
+    //Thread creado
+    THREADS.push(new_thread);
+    ACTIVE_THREADS.push(new_thread);
+    //ROUND_ROBIN_THREADS.push(new_thread);
+    //SORT_THREADS.push(new_thread);
+    return new_thread;
+}
+/*
+//funcion para crear un hilo
+pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: isize, object : &mut String) -> Thread{
 
     // sheduler_type = 0 -> Round Robin
     // sheduler_type = 1 -> Sorteo
@@ -152,17 +180,14 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
     //Ver como importar esta variable del ucontext_t
 
     makecontext(&mut context as *mut ucontext_t, func, 1, object);
-    let mut new_thread = Thread {id:(get_number_of_threads() + 1), state: State::On, tickets: 1,
-        scheduler: 0, context
-    };
+    let mut new_thread = Thread {id:(get_number_of_threads() + 1), state: State::On, tickets: 1, context};
     //Thread creado
     THREADS.push(new_thread);
     ACTIVE_THREADS.push(new_thread);
     //ROUND_ROBIN_THREADS.push(new_thread);
     //SORT_THREADS.push(new_thread);
     return new_thread;
-
-}
+}*/
 
 
 

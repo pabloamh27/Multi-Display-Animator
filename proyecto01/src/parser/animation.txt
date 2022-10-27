@@ -3,7 +3,7 @@ size:100,100
 sched:1
 time:10
 start_pos:10,25
-final_pos:20,50
+final_pos:15,30
 degrees_rotated:270
 | |x|x|x| |
 |x|x|x|x|x|

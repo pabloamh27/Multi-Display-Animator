@@ -6,6 +6,7 @@ use crate::mypthread_struct::{Thread, State, get_state};
 
 
 static mut STACK_SIZE: usize = 10000;
+static mut LOTTERY_TICKETS: Vec<i32> =  Vec::new();
 
 //funcion para mapear schedulers
 pub (crate) unsafe fn my_thread_change_sched(scheduler_type: u64){
@@ -65,11 +66,19 @@ pub (crate) unsafe fn my_scheduler_round_robin(){
     }
 }
 
+
 pub (crate) unsafe fn my_scheduler_sort() {
-    while active_sched == 2 && THREADS.len() != 0 {
+    while  THREADS.len() != 0 && active_sched == 2{
         println!("{}", THREADS.len());
         println!("{}", DEAD_THREADS.len());
-        let mut winner = rand::thread_rng().gen_range(0..THREADS.len());
+        for i in THREADS.clone() {
+            let mut tickets = i.tickets;
+            for j in 0..tickets {
+                LOTTERY_TICKETS.push(i.id as i32);
+            }
+        }
+        let mut random = rand::thread_rng().gen_range(0..LOTTERY_TICKETS.len());
+        let mut winner = LOTTERY_TICKETS[random] as usize;
         CURRENT_THREAD = &mut THREADS[winner].context as *mut ucontext_t;
         println!("Hilo: {}", THREADS[winner].id);
         my_thread_yield(EXIT_CONTEXT, child_match(winner) as *const ucontext_t);
@@ -78,5 +87,6 @@ pub (crate) unsafe fn my_scheduler_sort() {
 
     }
 }
+
 
 pub (crate) unsafe fn my_scheduler_real_time() {}

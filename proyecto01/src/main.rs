@@ -6,7 +6,7 @@ use crate::mycanvas::{init_canvas};
 mod mypthread_struct;
 mod myschedulers;
 use ncurses;
-use crate::parser::{print_animation_args, parse_object_args, load_file};
+use crate::parser::{print_animation_args, parse_object_args, load_file, animation_args};
 use crate::animation::{animation_fn};
 
 #[path = "parser/parser.rs"] mod parser;
@@ -25,23 +25,27 @@ use libc::c_char;
 use std::mem;
 use std::mem::transmute;
 
-// Función de ejemplo
-extern "C" fn thread(object: parser::animation_args) {
-    animation_fn(object);
+pub (crate) static mut OBJECTS: Vec<animation_args> =  Vec::new();
+
+
+extern "C" fn thread(index : usize) {
+    unsafe  {
+    animation_fn(OBJECTS[index].clone());
+
+    }
+}
+
+/*
+extern "C" fn thread(object: &mut String) {
+    println!("{}", object);
     unsafe  {
         my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT);
     }
 }
-
+*/
 
 pub fn main() {
-    /*let data = load_file();
-
-    let object: parser::animation_args = parse_object_args(data);
-
-    print_animation_args(&object);
-    //init_canvas();
-    //init_animation();
+    /*
     unsafe {
         //Se ingresa el tipo de scheduler a correr y el quantum a seleccionar
         /*
@@ -71,23 +75,40 @@ pub fn main() {
         }
         thread_manager.run_threads();
     }
-    return;*/
+    return;
+*/
+
+    unsafe {
+        let data = load_file();
+
+        OBJECTS = parse_object_args(data);
+
+        parser::print_animation_args_vec(&OBJECTS[0].ascii_object);
+        //animation_fn(objects[1].clone());
 
 
-    let data = load_file();
+        //Se ingresa el tipo de scheduler a correr y el quantum a seleccionar
+        /*
+        1: Round Robin
+        2: Sort
+        3: Real Time
+        Recomendamos un Quantum de 200
+        */
+        //Prueba con Round Robin
+        let mut scheduler_type: isize = 1;
+        //Prueba con Sorteo
+        //let mut scheduler_type: isize = 2;
+        //Prueba con Real Time
+        //let mut scheduler_type: isize = 3;
+        let mut thread_manager = unsafe { start_manager(scheduler_type, 200) };
+        for i in 0..OBJECTS.len() {
+            my_thread_create(transmute::<extern "C" fn(usize), extern "C" fn()>(thread), 1, i);
+        }
 
-    let objects: parser::animation_args = parse_object_args(data);
+        thread_manager.run_threads();
+    }
 
-    parser::print_animation_args_vec(&objects.ascii_object);
 
-
-    /*
-    for i in objects.ascii_objects{
-        unsafe { my_thread_create(transmute::<extern "C" fn(parser::animation_args), extern "C" fn()>(thread), 1,  i); }
-        ;
-    }*/
-
-    //animation_fn(objects);
 
 
 
