@@ -4,7 +4,7 @@ use std::io::{BufReader, Read};
 
 pub(crate) fn load_file() -> Vec<String> {
     //let mut file = File::open("/home/estudiante/Escritorio/S.O/proyecto1/sistemasoperativos-proyecto01/proyecto01/src/parser/animation.txt").expect("file not found");
-    let mut file = File::open("/home/estudiante/Desktop/Repos_Git/sistemasoperativos-proyecto01/proyecto01/src/parser/animation.txt").expect("file not found");
+    let mut file = File::open("src/parser/animation.txt").expect("file not found");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .expect("something went wrong reading the file");
@@ -26,10 +26,9 @@ pub (crate) struct animation_args {
     pub (crate) ascii_object: Vec<String>
 }
 
-pub(crate) fn parse_object_args(data: Vec<String>) -> animation_args {
-
+pub(crate) fn parse_object_args(mut data: Vec<String>) -> Vec<animation_args> {
+    let mut objects: Vec<animation_args> = Vec::new();
     let size: Vec<&str> = data[1].split(":").collect();
-
     let mut args = animation_args {
         weight: size[1].split(",").collect::<Vec<&str>>()[0].parse::<i32>().unwrap(),
         height: size[1].split(",").collect::<Vec<&str>>()[1].parse::<i32>().unwrap(),
@@ -42,15 +41,37 @@ pub(crate) fn parse_object_args(data: Vec<String>) -> animation_args {
         rotation: data[6].split(":").collect::<Vec<&str>>()[1].parse::<i32>().unwrap(),
         ascii_object: get_ascii_object(data)
     };
+    objects.push(args);
 
-    return args;
+    while  {
+
+    } {
+        if data[1].to_string() == "next"{
+            data.remove(1);
+            break;
+        }
+        else {
+            data.remove(1);
+        }
+    }
+
+    if data.len() != 1 {
+        parse_object_args(data.clone());
+    }
+
+
+
+    return objects;
 }
 
 
 pub (crate) fn get_ascii_object(data: Vec<String>) -> Vec<String> {
     let mut ascii_object: Vec<String> = Vec::new();
     for i in 7..data.len() {
-        if data[i].to_string() == "end" {continue; }
+        if data[i].to_string() == "next" {
+            break;
+        }
+        else if data[i].to_string() == "end"  {continue; }
         else { ascii_object.push(data[i].to_string()); }
     }
     return ascii_object;

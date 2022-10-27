@@ -1,6 +1,6 @@
 use ncurses::{initscr, noecho, curs_set, FALSE, CURSOR_VISIBILITY, WINDOW};
 use crate::animation;
-use crate::animation::{monitor_info, monitor_queue, datos_objeto, config};
+//use crate::animation::{monitor_info, monitor_queue, datos_objeto, config};
 
 //static mut configuracion : config = config {x: 0, y: 0, tiempo: 0, scheduler: 0};
 

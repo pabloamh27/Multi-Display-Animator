@@ -6,6 +6,7 @@ use std::mem::transmute;
 use std::process::exit;
 
 use rand::Rng;
+use crate::parser;
 
 pub static mut THREADS:Vec<Thread> = Vec::new();
 pub static mut DEAD_THREADS:Vec<Thread> = Vec::new();
@@ -133,7 +134,7 @@ pub (crate) unsafe fn run_threads() {
 */
 
 //funcion para crear un hilo
-pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: isize, text : &mut String) -> Thread{
+pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: isize, object : parser::animation_args) -> Thread{
 
     // sheduler_type = 0 -> Round Robin
     // sheduler_type = 1 -> Sorteo
@@ -150,7 +151,7 @@ pub (crate) unsafe fn my_thread_create(func: extern "C" fn(), priority_thread: i
     context.uc_link = parent_match() as *mut ucontext_t;;
     //Ver como importar esta variable del ucontext_t
 
-    makecontext(&mut context as *mut ucontext_t, func, 1, text);
+    makecontext(&mut context as *mut ucontext_t, func, 1, object);
     let mut new_thread = Thread {id:(get_number_of_threads() + 1), state: State::On, tickets: 1,
         scheduler: 0, context
     };

@@ -7,6 +7,7 @@ mod mypthread_struct;
 mod myschedulers;
 use ncurses;
 use crate::parser::{print_animation_args, parse_object_args, load_file};
+use crate::animation::{animation_fn};
 
 #[path = "parser/parser.rs"] mod parser;
 
@@ -25,8 +26,8 @@ use std::mem;
 use std::mem::transmute;
 
 // Función de ejemplo
-extern "C" fn thread(input: &mut String) {
-    println!("{}", input);
+extern "C" fn thread(object: parser::animation_args) {
+    animation_fn(object);
     unsafe  {
         my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT);
     }
@@ -34,7 +35,7 @@ extern "C" fn thread(input: &mut String) {
 
 
 pub fn main() {
-    let data = load_file();
+    /*let data = load_file();
 
     let object: parser::animation_args = parse_object_args(data);
 
@@ -70,7 +71,25 @@ pub fn main() {
         }
         thread_manager.run_threads();
     }
-    return;
+    return;*/
+
+
+    let data = load_file();
+
+    let objects: parser::animation_args = parse_object_args(data);
+
+    parser::print_animation_args_vec(&objects.ascii_object);
+
+
+    /*
+    for i in objects.ascii_objects{
+        unsafe { my_thread_create(transmute::<extern "C" fn(parser::animation_args), extern "C" fn()>(thread), 1,  i); }
+        ;
+    }*/
+
+    //animation_fn(objects);
+
+
 
 
 }

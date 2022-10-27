@@ -1,10 +1,125 @@
+use std::io::BufRead;
+use crate::parser::{parse_object_args, animation_args};
+
+
+use ncurses::TRUE;
+use ncurses::stdscr;
+use ncurses::curs_set;
+use ncurses::initscr;
+use ncurses::noecho;
+use ncurses::FALSE;
+use ncurses::getmaxyx;
+use ncurses::mvprintw;
+use ncurses::refresh;
+use ncurses::clear;
+use ncurses::endwin;
+use libc::{c_uint, usleep};
+static DELAY:u64 = 1000000;
+static DELAY_running:u32 = 1000;
+static LOOP:bool = true;
+
+
+pub(crate) fn animation_fn(animation_struct: animation_args) {
+
+    let mut x = animation_struct.start_pos.1;
+    let mut y = animation_struct.start_pos.0;
+
+    let mut x_objective = animation_struct.end_pos.1;
+    let mut y_objective = animation_struct.end_pos.0;
+
+    print!("{} {} {} {}", x, y, x_objective, y_objective);
+
+    let mut canva_X = animation_struct.weight;
+    let mut canva_Y = animation_struct.height;
+
+    let mut next_x = 0;
+
+    let mut direction = 1;
+
+    initscr();
+    noecho();
+
+    let mut window = stdscr();
+    getmaxyx(window, &mut canva_Y, &mut canva_X);
+
+    //x = max_X / 2;
+    //y = max_Y / 2;
+
+    let mut ascii = animation_struct.ascii_object.clone();
+
+    while LOOP {
+        getmaxyx(window, &mut canva_Y, &mut canva_X);
+
+        y = canva_Y / 2;
+        clear();
+
+        for i in &ascii {
+            unsafe{usleep(DELAY_running as c_uint)};
+            mvprintw(y, x, &*i);
+            if x != x_objective {
+                if y != y_objective {
+                    y += 1;
+                }
+                else {
+                    x += 1;
+                }
+
+            }
+            else {
+                if y != y_objective {
+                    y += 1;
+                }
+                else {
+                    continue;
+                }
+            }
+            unsafe{usleep(DELAY_running as c_uint)};
+
+            /*mvprintw(y, x, &*i);
+            y += 1;*/
+        }
+
+        refresh();
+
+        unsafe{usleep(DELAY as c_uint)};
+
+        if next_x == canva_X - 1 {
+            endwin();
+        } else {
+            next_x = x + direction;
+        }
+
+
+        if next_x >= canva_X - 10 || next_x < 0 {
+            direction= -1;
+        }
+        else
+        {
+            x += direction;
+        }
+    }
+    endwin();
+}
+
+/*pub(crate) fn rotate_90(ascii: &mut Vec<String>) {
+    return_vec: Vec<String> = Vec::new();
+    for i in ascii.iter_mut() {
+        let mut temp = i.clone();
+
+    return return_vec;
+    }
+}*/
+
+
+
+
 //use crate::mymutex::{init_mutex, lock_mutex, destroy_mutex};
-use ncurses::{mvwprintw, WINDOW, wrefresh};
+/*use ncurses::{mvwprintw, WINDOW, wrefresh};
 use crate::mypthread::{my_thread_yield};
 use std::thread::sleep;
 use std::time;
 use libc::{time, time_t};
-use crate::{CURRENT_THREAD, EXIT_CONTEXT};
+use crate::{CURRENT_THREAD, XIT_CONTEXT};
 
 pub (crate) struct monitor_info {
     pub(crate)id: i32,
@@ -43,8 +158,9 @@ pub (crate) struct config {
     pub(crate)item_list: *mut datos_objeto,
     pub(crate)espacio_entre_objetos: i32,
 }
+*/
 
-
+/*
 pub static mut top: &str = "                     *                       ";
 pub static mut topSec: &str = "               *******                    ";
 pub static mut midTop: &str = "           ***************                ";
@@ -71,7 +187,7 @@ pub static mut botExpFin: &str = "                                          ";
 
 pub (crate) fn init_animation() {
     //init_mutex();
-}
+}*/
 
 /*
 pub (crate) unsafe fn move_figure() {

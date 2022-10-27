@@ -3,11 +3,23 @@ size:100,100
 sched:1
 time:10
 start_pos:10,25
-final_pos:10,75
+final_pos:20,50
 degrees_rotated:270
 | |x|x|x| |
 |x|x|x|x|x|
 | |x|x|x| |
 | |x|x|x| |
 | |x|x|x| |
+next
+size:100,100
+sched:1
+time:10
+start_pos:10,25
+final_pos:20,50
+degrees_rotated:270
+| |X|X|X| |
+| |x|x|x| |
+| |x|x|x| |
+| |x|x|x| |
+| | | | | |
 end
