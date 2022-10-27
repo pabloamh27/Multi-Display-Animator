@@ -16,6 +16,7 @@ mod mymutex;
 
 
 use std::{mem::transmute};
+use libc::exit;
 
 
 pub (crate) static mut OBJECTS: Vec<AnimationArgs> =  Vec::new();
@@ -31,7 +32,24 @@ extern "C" fn thread(index : usize) {
 pub fn main() {
 
     unsafe {
-        let data = load_file();
+        let args = std::env::args().collect::<Vec<String>>();
+        if args.len() < 4 {
+            println!("El programa debe recibir un minimo de 3 parametros de la forma:\
+            ./proyecto01 animar -c <ruta COMPLETA Y ABSOLUTA del archivo>");
+            exit(1);
+        }
+        if args[1] != String::from("animar") {
+            println!("La primer entrada debe ser la palabra 'animar'");
+            exit(1);
+        }
+        if args[2] != String::from("-c") {
+            println!("El segundo argumento debe ser -c para indicarle al programa que debe leer configuracion.");
+            exit(1);
+        }
+
+        let file = &args[3];
+        //Pofesor tiene que ponele el path completo, desde lo mas basico, no entiende relativos este carajo
+        let data = load_file(file);
 
         OBJECTS = parse_object_args(data);
         //animation_fn(objects[1].clone());

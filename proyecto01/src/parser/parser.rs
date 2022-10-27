@@ -1,17 +1,18 @@
 use std::fs::File;
 use std::io::{Read};
 
-pub(crate) fn load_file() -> Vec<String> {
-    let mut file = File::open("src/parser/animation.txt").expect("file not found");
+pub(crate) fn load_file(ruta: &str) -> Vec<String> {
+    let mut file = File::open(ruta).expect("Debe contener la direccion COMPLETA ABSOLUTA de el archivo de configuracion a leer.");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
-        .expect("something went wrong reading the file");
+        .expect("Se despicho tere");
     let mut lines: Vec<String> = Vec::new();
     for line in contents.lines() {
         lines.push(line.to_string());
     }
     return lines;
 }
+
 
 #[derive(Clone)]
 pub (crate) struct AnimationArgs {
