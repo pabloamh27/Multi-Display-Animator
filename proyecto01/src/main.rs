@@ -1,7 +1,7 @@
 mod mypthread;
 
 use crate::mypthread::{CURRENT_THREAD, EXIT_CONTEXT, start_manager, my_thread_create, my_thread_yield};
-//use crate::animation::{init_animation, move_figure};
+
 mod mypthread_struct;
 mod myschedulers;
 use crate::parser::{parse_object_args, load_file, AnimationArgs};

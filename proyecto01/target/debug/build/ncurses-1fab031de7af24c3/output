@@ -83,4 +83,4 @@ HOST_CFLAGS = None
 CFLAGS = None
 CRATE_CC_NO_DEFAULTS = None
 DEBUG = Some("true")
-CARGO_CFG_TARGET_FEATURE = Some("fxsr,sse,sse2")
+CARGO_CFG_TARGET_FEATURE = Some("fxsr,llvm14-builtins-abi,sse,sse2")

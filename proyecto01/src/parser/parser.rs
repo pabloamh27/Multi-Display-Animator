@@ -1,6 +1,8 @@
 use std::fs::File;
 use std::io::{Read};
 
+
+// lee el archivo y lo guarda en un vector de strings
 pub(crate) fn load_file(ruta: &str) -> Vec<String> {
     let mut file = File::open(ruta).expect("Debe contener la direccion COMPLETA ABSOLUTA de el archivo de configuracion a leer.");
     let mut contents = String::new();
@@ -13,7 +15,7 @@ pub(crate) fn load_file(ruta: &str) -> Vec<String> {
     return lines;
 }
 
-
+// struct que guarda el objeto de animacion y los datos del canvas, la duración de su ejecución y sus posiciones
 #[derive(Clone)]
 pub (crate) struct AnimationArgs {
     pub (crate) weight: i32,
@@ -26,7 +28,7 @@ pub (crate) struct AnimationArgs {
     pub (crate) ascii_object: Vec<String>,
 }
 
-
+// Funcion que llena el objeto AnimationArgs con los datos del archivo de configuracion
 pub(crate) fn fill_object (data: Vec<String>) -> AnimationArgs {
     let size: Vec<&str> = data[1].split(":").collect();
     let args = AnimationArgs {
@@ -44,7 +46,7 @@ pub(crate) fn fill_object (data: Vec<String>) -> AnimationArgs {
     return args;
 }
 
-
+// Funcion que revisa si hay otro objeto que correr en el archivo de configuracion
 pub(crate) fn parse_object_args(mut data: Vec<String>) -> Vec<AnimationArgs> {
     let mut objects: Vec<AnimationArgs> = Vec::new();
     //--------------------------------------------------
@@ -67,6 +69,8 @@ pub(crate) fn parse_object_args(mut data: Vec<String>) -> Vec<AnimationArgs> {
     return objects;
 }
 
+
+// FUncion que toma solo el ascii object del archivo de configuracion
 pub (crate) fn get_ascii_object(data: Vec<String>) -> Vec<String> {
     let mut ascii_object: Vec<String> = Vec::new();
     for i in 7..data.len() {
@@ -79,6 +83,7 @@ pub (crate) fn get_ascii_object(data: Vec<String>) -> Vec<String> {
     return ascii_object;
 }
 
+// Función de prueba para ver si se lee el archivo de configuracion
 pub(crate) fn _print_animation_args(args: &AnimationArgs) {
     println!("weight: {}", args.weight);
     println!("height: {}", args.height);
@@ -94,7 +99,7 @@ pub(crate) fn _print_animation_args(args: &AnimationArgs) {
 }
 
 
-
+// Función de prueba para ver si se lee el archivo de configuracion
 pub (crate) fn _print_animation_args_vec(args: &Vec<String>) {
     for arg in args.iter() {
         println!("{}", arg);

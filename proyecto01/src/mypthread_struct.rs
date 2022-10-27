@@ -1,6 +1,7 @@
 use libc::ucontext_t;
 
 
+//Struct que representa a um hilo
 #[derive(Clone, Copy)]
 pub struct Thread {
     pub(crate) id: usize,
@@ -20,6 +21,7 @@ pub enum State {
 }
 
 
+// Funcion para obtener un estado de un hilo
 pub(crate) fn _get_state(thread: Thread) -> State {
     return thread.state;
 }

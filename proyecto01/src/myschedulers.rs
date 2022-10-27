@@ -4,14 +4,7 @@ use crate::mypthread::{CURRENT_THREAD, THREADS, my_thread_yield, child_match, EX
 use crate::mypthread_struct::{Thread};
 use crate::mypthread_struct::State::{Off};
 
-
-//funcion para mapear schedulers
-pub (crate) unsafe fn _my_thread_change_sched(scheduler_type: u64){
-    if scheduler_type == 0 { ACTIVE_SCHEDULER = 0;}
-    if scheduler_type == 1 { ACTIVE_SCHEDULER = 1;}
-    if scheduler_type == 2 { ACTIVE_SCHEDULER = 2;}
-}
-
+//Funcion que realiza un recorrido por todos los hilos usando Round Robin
 pub (crate) unsafe fn my_scheduler_round_robin(){
     let mut i = 0;
     while THREADS.len() != DEAD_THREADS.len() && ACTIVE_SCHEDULER == 1 {
@@ -26,6 +19,7 @@ pub (crate) unsafe fn my_scheduler_round_robin(){
     }
 }
 
+//Funcion que realiza un recorrido por todos los hilos usando Lottery
 pub (crate) unsafe fn my_scheduler_lottery() {
     while  THREADS.len() != 0 && ACTIVE_SCHEDULER == 2 {
         let mut lottery_tickets : Vec<usize> = Vec::new();
@@ -58,7 +52,7 @@ pub (crate) unsafe fn my_scheduler_lottery() {
     }
 
 
-
+//Funcion que toma los hilos y revisa cuál es el que dura menos en ejecutarse para retornar su posición
 pub (crate) unsafe fn get_min_execute_value() -> usize {
     let mut min: Thread;
     min = THREADS[0];
@@ -74,6 +68,8 @@ pub (crate) unsafe fn get_min_execute_value() -> usize {
     return final_pos;
 }
 
+
+//Funcion que realiza un recorrido por todos los hilos usando Real Time (EDF)
 pub (crate) unsafe fn my_scheduler_real_time() {
     while THREADS.len() != 0 && ACTIVE_SCHEDULER == 3 {
         CURRENT_THREAD = &mut THREADS[get_min_execute_value()].context as *mut ucontext_t;
