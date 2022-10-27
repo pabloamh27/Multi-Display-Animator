@@ -36,15 +36,15 @@ pub fn main() {
         if args.len() < 4 {
             println!("El programa debe recibir un minimo de 3 parametros de la forma:\
             ./proyecto01 animar -c <ruta COMPLETA Y ABSOLUTA del archivo>");
-            exit(1);
+            exit(69);
         }
         if args[1] != String::from("animar") {
             println!("La primer entrada debe ser la palabra 'animar'");
-            exit(1);
+            exit(69);
         }
         if args[2] != String::from("-c") {
             println!("El segundo argumento debe ser -c para indicarle al programa que debe leer configuracion.");
-            exit(1);
+            exit(69);
         }
 
         let file = &args[3];
