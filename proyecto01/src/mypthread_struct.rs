@@ -15,24 +15,11 @@ pub struct Thread {
 pub enum State {
     On = 1,
     Off = 0,
-    Ready = 2,
-    Waiting = 3,
-    Blocked = 4,
-}
-
-// implementación de la estructura de datos de pthread (hilos)
-impl Thread {
-    fn new(id: usize, state: State, scheduler: isize, priority: u64, context: ucontext_t,tickets: i32) -> Thread {
-        Thread {
-            id: id,
-            state: state,
-            context: context,
-            tickets: tickets,
-        }
-    }
+    _Ready = 2,
+    _Waiting = 3,
 }
 
 
-pub(crate) fn get_state(thread: Thread) -> State {
+pub(crate) fn _get_state(thread: Thread) -> State {
     return thread.state;
 }

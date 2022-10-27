@@ -1,27 +1,16 @@
-use std::io::BufRead;
-use crate::parser::{parse_object_args, animation_args};
+use crate::parser::{AnimationArgs};
 
 
-use ncurses::TRUE;
-use ncurses::stdscr;
-use ncurses::curs_set;
-use ncurses::initscr;
-use ncurses::noecho;
-use ncurses::FALSE;
-use ncurses::getmaxyx;
-use ncurses::mvprintw;
-use ncurses::refresh;
-use ncurses::clear;
-use ncurses::endwin;
-use libc::{c_uint, usleep};
-use ncurses::ll::newwin;
-use crate::mypthread::{CURRENT_THREAD, EXIT_CONTEXT, my_thread_yield};
-
-static DELAY:u64 = 10000;
-static DELAY_running:u32 = 100000;
-static LOOP:bool = true;
+use ncurses::{initscr, noecho, mvwprintw, ll::newwin, WINDOW};
+use libc::{c_uint, time, time_t, usleep};
+use ncurses::ll::wrefresh;
 
 
+static DELAY:u64 = 700000;
+static DELAY_RUNNING:u32 = 800000;
+static DELAY_BETWEEN_MOVES:u32 = 900000;
+
+/*
 pub(crate) unsafe fn animation_fn(animation_struct: animation_args) {
 
     let mut x = animation_struct.start_pos.1;
@@ -110,7 +99,7 @@ pub(crate) unsafe fn animation_fn(animation_struct: animation_args) {
     refresh();
     //my_thread_yield(CURRENT_THREAD,EXIT_CONTEXT);
 }
-
+*/
 
 
 /*def rotate90Clockwise(A):
@@ -161,7 +150,7 @@ pub (crate) struct datos_objeto {
     pub(crate)tiempo_inicio: i32,
     pub(crate)scheduler: i32,
     pub(crate)monitor_id: i32,
-    pub(crate)ascii_item: Vec<String>,
+    pub(crate)ascii_object: Vec<String>,
 }
 
 pub (crate) struct config {
@@ -174,186 +163,154 @@ pub (crate) struct config {
 */
 
 /*
-pub static mut top: &str = "                     *                       ";
-pub static mut topSec: &str = "               *******                    ";
-pub static mut midTop: &str = "           ***************                ";
-pub static mut mid: &str = "            *******************              ";
-pub static mut midBot: &str = "           ***************                ";
-pub static mut botSec: &str = "               *******                    ";
-pub static mut bot: &str = "                     *                      ";
 
-pub static mut topExp: &str = "        ***       *********       **          ";
-pub static mut topSecExp: &str = "   *        *********************       *     ";
-pub static mut midTopExp: &str = "     *********************************       ";
-pub static mut midExp: &str = "  ***************************************    ";
-pub static mut midBotExp: &str = " *    *********************************  **   ";
-pub static mut botSecExp: &str = "      *     *********************             ";
-pub static mut botExp: &str = "  *               *********              **   ";
-
-pub static mut topExpFin: &str = "                                              ";
-pub static mut topSecExpFin: &str = "                  ***                      ";
-pub static mut midTopExpFin: &str = "                *******                    ";
-pub static mut midExpFin: &str = "             *************                 ";
-pub static mut midBotExpFin: &str = "                *******                    ";
-pub static mut botSecExpFin: &str = "                  ***                      ";
-pub static mut botExpFin: &str = "                                          ";
 
 pub (crate) fn init_animation() {
     //init_mutex();
 }*/
+pub static mut TOP: &str = "                     *                       ";
+pub static mut TOPMID: &str = "               *******                    ";
+pub static mut MIDTOP: &str = "           ***************                ";
+pub static mut MID: &str = "            *******************              ";
+pub static mut MIDBOT: &str = "           ***************                ";
+pub static mut BOTMID: &str = "               *******                    ";
+pub static mut BOT: &str = "                     *                      ";
 
-/*
-pub (crate) unsafe fn move_figure() {
-    //mymutex::lock_mutex();
-    let mut figure = datos_objeto {
-        x_actual: 0,
-        y_actual: 0,
-        x_final: 0,
-        y_final: 0,
-        x_inicial: 0,
-        y_inicial: 0,
-        angulo: 0,
-        tiempo_fin: 0,
-        tiempo_inicio: 0,
-        scheduler: 0,
-        monitor_id: 0,
-        ascii_item: Vec::new(),
-    };
-    // IMPLEMENTAR ESTO! datos_objeto *figure = configuracion.item_list;
-    //mymutex::unlock_mutex();
-    //mymutex::lock_mutex();
-    // IMPLEMENTAR ESTO! monitor_info *temp_monitor = configuracion.monitor_list.head;
-    let mut temp_monitor = monitor_info {
-        id: 0,
-        width: 0,
-        height: 0,
-        canvas_window: std::ptr::null_mut(),
-        previo: std::ptr::null_mut(),
-        siguiente: std::ptr::null_mut(),
-    };
-    while (temp_monitor.id != figure.monitor_id) {
-        temp_monitor = temp_monitor.siguiente;
-    }
-    //mymutex::unlock_mutex();
-    //mymutex::lock_mutex();
-    figure.x_actual = figure.x_inicio;
-    figure.y_actual = figure.y_inicio;
-    //mymutex::unlock_mutex();
+pub static mut TOPEXP: &str = "        ***       *********       **          ";
+pub static mut TOPMIDEXP: &str = "   *        *********************       *     ";
+pub static mut MIDTOPEXP: &str = "     *********************************       ";
+pub static mut MIDEXP: &str = "  ***************************************    ";
+pub static mut MIDBOTEXP: &str = " *    *********************************  **   ";
+pub static mut BOTMIDEXP: &str = "      *     *********************             ";
+pub static mut BOTEXP: &str = "  *               *********              **   ";
 
-    while (1) {
-        if (time(0 as *mut time_t) < figure.tiempo_inicio) {
-            my_thread_yield(EXIT_CONTEXT, CURRENT_THREAD);
-        } else {
-            while (figure.x_actual != figure.x_final || figure.y_inicial != figure.y_final) {
-                if (figure.y_actual <= figure.y_final) {
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual - 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 2, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 3, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 4, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 5, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 6, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 7, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 8, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 9, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual + 10, " ");
+pub static mut TOPEXPFIN: &str = "                                              ";
+pub static mut TOPMIDEXPFIN: &str = "                  ***                      ";
+pub static mut MIDTOPEXPFIN: &str = "                *******                    ";
+pub static mut MIDEXPFIN: &str = "             *************                 ";
+pub static mut MIDBOTEXPFIN: &str = "                *******                    ";
+pub static mut BOTMIDEXPFIN: &str = "                  ***                      ";
+pub static mut BOTEXPFIN: &str = "                                          ";
+
+pub (crate) unsafe fn animation_fn(animation_struct: AnimationArgs) {
+    let mut x_actual = animation_struct.start_pos.1;
+    let mut y_actual = animation_struct.start_pos.0;
+
+    let x_objective = animation_struct.end_pos.1;
+    let y_objective = animation_struct.end_pos.0;
+
+    let tiempo_fin: time_t = 5 + time(0 as *mut time_t);
+
+    initscr();
+    noecho();
+
+
+    let canvas_window: WINDOW = newwin(animation_struct.height , animation_struct.weight , 0, 0);
+
+    loop {
+            while x_actual != x_objective || animation_struct.start_pos.0 != y_objective {
+                if y_actual <= y_objective {
+                    mvwprintw(canvas_window, y_actual - 3, x_actual - 1, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 1, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 2, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 3, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 4, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 5, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 6, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 7, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 8, " ");
+                    mvwprintw(canvas_window, y_actual - 3, x_actual + 9, " ");
                 }
-                if (figure.x_actual <= figure.x_final) {
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 2, figure.x_actual - 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 1, figure.x_actual - 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual, figure.x_actual - 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 1, figure.x_actual - 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 2, figure.x_actual - 1, " ");
+                if x_actual <= x_objective {
+                    mvwprintw(canvas_window, y_actual - 2, x_actual - 1, " ");
+                    mvwprintw(canvas_window, y_actual - 1, x_actual - 1, " ");
+                    mvwprintw(canvas_window, y_actual, x_actual - 1, " ");
+                    mvwprintw(canvas_window, y_actual + 1, x_actual - 1, " ");
+                    mvwprintw(canvas_window, y_actual + 2, x_actual - 1, " ");
                 }
-                if (figure.x_actual >= figure.x_final) {
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 2, figure.x_actual + 11, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 1, figure.x_actual + 11, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual, figure.x_actual + 11, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 1, figure.x_actual + 11, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 2, figure.x_actual + 11, " ");
+                if x_actual >= x_objective {
+                    mvwprintw(canvas_window, y_actual - 2, x_actual + 11, " ");
+                    mvwprintw(canvas_window, y_actual - 1, x_actual + 11, " ");
+                    mvwprintw(canvas_window, y_actual, x_actual + 11, " ");
+                    mvwprintw(canvas_window, y_actual + 1, x_actual + 11, " ");
+                    mvwprintw(canvas_window, y_actual + 2, x_actual + 11, " ");
                 }
-                if (figure.y_actual >= figure.y_final) {
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual - 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 1, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 2, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 3, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 4, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 5, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 6, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 7, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 8, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 9, " ");
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual + 10, " ");
+                if y_actual >= y_objective {
+                    mvwprintw(canvas_window, y_actual + 3, x_actual - 1, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 1, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 2, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 3, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 4, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 5, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 6, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 7, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 8, " ");
+                    mvwprintw(canvas_window, y_actual + 3, x_actual + 9, " ");
                 }
-                mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual, figure.ascii_item[0]);
-                mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 2, figure.x_actual, figure.ascii_item[1]);
-                mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 1, figure.x_actual, figure.ascii_item[2]);
-                mvwprintw(*temp_monitor.canvas_window, figure.y_actual, figure.x_actual, figure.ascii_item[3]);
-                mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 1, figure.x_actual, figure.ascii_item[4]);
-                mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 2, figure.x_actual, figure.ascii_item[5]);
-                mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual, figure.ascii_item[6]);
-                if (time(0 as *mut time_t) > figure.tiempo_fin as time_t) {
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual, topExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 2, figure.x_actual, topSecExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 1, figure.x_actual, midTopExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual, figure.x_actual, midExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 1, figure.x_actual, midBotExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 2, figure.x_actual, botSecExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual, botExpFin);
-                    wrefresh(*temp_monitor.canvas_window);
-                    sleep(time::Duration::from_millis(800000));
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual, top);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 2, figure.x_actual, topSec);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 1, figure.x_actual, midTop);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual, figure.x_actual, mid);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 1, figure.x_actual, midBot);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 2, figure.x_actual, botSec);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual, bot);
-                    wrefresh(*temp_monitor.canvas_window);
-                    sleep(time::Duration::from_millis(800000));
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual, topExp);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 2, figure.x_actual, topSecExp);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 1, figure.x_actual, midTopExp);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual, figure.x_actual, midExp);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 1, figure.x_actual, midBotExp);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 2, figure.x_actual, botSecExp);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual, botExp);
-                    wrefresh(*temp_monitor.canvas_window);
-                    sleep(time::Duration::from_millis(700000));
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 3, figure.x_actual, topExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 2, figure.x_actual, topSecExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual - 1, figure.x_actual, midTopExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual, figure.x_actual, midExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 1, figure.x_actual, midBotExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 2, figure.x_actual, botSecExpFin);
-                    mvwprintw(*temp_monitor.canvas_window, figure.y_actual + 3, figure.x_actual, botExpFin);
-                    wrefresh(*temp_monitor.canvas_window);
+                mvwprintw(canvas_window, y_actual - 2, x_actual, &animation_struct.ascii_object[0].clone() as &str);
+                mvwprintw(canvas_window, y_actual - 1, x_actual, &animation_struct.ascii_object[1].clone() as &str);
+                mvwprintw(canvas_window, y_actual , x_actual, &animation_struct.ascii_object[2].clone() as &str);
+                mvwprintw(canvas_window, y_actual + 1, x_actual, &animation_struct.ascii_object[3].clone() as &str);
+                mvwprintw(canvas_window, y_actual + 2, x_actual, &animation_struct.ascii_object[4].clone() as &str);
+                if time(0 as *mut time_t) > tiempo_fin {
+                    mvwprintw(canvas_window, y_actual - 3, x_actual, TOPEXPFIN);
+                    mvwprintw(canvas_window, y_actual - 2, x_actual, TOPMIDEXPFIN);
+                    mvwprintw(canvas_window, y_actual - 1, x_actual, MIDTOPEXPFIN);
+                    mvwprintw(canvas_window, y_actual, x_actual, MIDEXPFIN);
+                    mvwprintw(canvas_window, y_actual + 1, x_actual, MIDBOTEXPFIN);
+                    mvwprintw(canvas_window, y_actual + 2, x_actual, BOTMIDEXPFIN);
+                    mvwprintw(canvas_window, y_actual + 3, x_actual, BOTEXPFIN);
+                    wrefresh(canvas_window);
+                    usleep(DELAY_RUNNING as c_uint);
+                    mvwprintw(canvas_window, y_actual - 3, x_actual, TOP);
+                    mvwprintw(canvas_window, y_actual - 2, x_actual, TOPMID);
+                    mvwprintw(canvas_window, y_actual - 1, x_actual, MIDTOP);
+                    mvwprintw(canvas_window, y_actual, x_actual, MID);
+                    mvwprintw(canvas_window, y_actual + 1, x_actual, MIDBOT);
+                    mvwprintw(canvas_window, y_actual + 2, x_actual, BOTMID);
+                    mvwprintw(canvas_window, y_actual + 3, x_actual, BOT);
+                    wrefresh(canvas_window);
+                    usleep(DELAY_RUNNING as c_uint);
+                    mvwprintw(canvas_window, y_actual - 3, x_actual, TOPEXP);
+                    mvwprintw(canvas_window, y_actual - 2, x_actual, TOPMIDEXP);
+                    mvwprintw(canvas_window, y_actual - 1, x_actual, MIDTOPEXP);
+                    mvwprintw(canvas_window, y_actual, x_actual, MIDEXP);
+                    mvwprintw(canvas_window, y_actual + 1, x_actual, MIDBOTEXP);
+                    mvwprintw(canvas_window, y_actual + 2, x_actual, BOTMIDEXP);
+                    mvwprintw(canvas_window, y_actual + 3, x_actual, BOTEXP);
+                    wrefresh(canvas_window);
+                    usleep(DELAY as c_uint);
+                    mvwprintw(canvas_window, y_actual - 3, x_actual, TOPEXPFIN);
+                    mvwprintw(canvas_window, y_actual - 2, x_actual, TOPMIDEXPFIN);
+                    mvwprintw(canvas_window, y_actual - 1, x_actual, MIDTOPEXPFIN);
+                    mvwprintw(canvas_window, y_actual, x_actual, MIDEXPFIN);
+                    mvwprintw(canvas_window, y_actual + 1, x_actual, MIDBOTEXPFIN);
+                    mvwprintw(canvas_window, y_actual + 2, x_actual, BOTMIDEXPFIN);
+                    mvwprintw(canvas_window, y_actual + 3, x_actual, BOTEXPFIN);
+                    wrefresh(canvas_window);
                     break;
                 }
 
-                //mymutex::lock_mutex();
+                if y_actual < y_objective {
+                    y_actual += 1;
+                }
+                if y_actual > y_objective {
+                    y_actual -= 1;
+                }
+                if x_actual < x_objective {
+                    x_actual += 1;
+                }
+                if x_actual > x_objective {
+                    x_actual -= 1;
+                }
 
-                if (figure.y_actual < figure.y_final) {
-                    figure.y_actual += 1;
-                }
-                if (figure.y_actual > figure.y_final) {
-                    figure.y_actual -= 1;
-                }
-                if (figure.x_actual < figure.x_final) {
-                    figure.x_actual += 1;
-                }
-                if (figure.x_actual > figure.x_final) {
-                    figure.x_actual -= 1;
-                }
-                //mymutex::unlock_mutex();
-
-                wrefresh(*temp_monitor.canvas_window);
-                sleep(time::Duration::from_millis(900000));
+                wrefresh(canvas_window);
+                usleep(DELAY_BETWEEN_MOVES as c_uint);
             }
             break;
         }
     }
-}
-*/
+
+
